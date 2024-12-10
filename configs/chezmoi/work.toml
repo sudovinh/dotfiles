@@ -8,4 +8,4 @@
     commitMessageTemplate = "{{ promptString \"conf: update from chezmoi\" }}"
 
 [data]
-    email = "vinhn@users.noreply.github.com"
+    email = "sudovinh@users.noreply.github.com"
