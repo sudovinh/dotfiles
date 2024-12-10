@@ -1,5 +1,3 @@
 autoload -U compinit; compinit
 
 eval "$(/opt/homebrew/bin/brew shellenv)"
-eval "$(devbox global shellenv)"
-eval "$(direnv hook zsh)"
