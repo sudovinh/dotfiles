@@ -1,0 +1,52 @@
+{
+  "packages": {
+    "curl": "latest",
+    "wget": "latest",
+    "tree": "latest",
+    "fzf": "latest",
+    "gh": "latest",
+    "nmap": "latest",
+    "htop": "latest",
+    "tmux": "latest",
+    "krew": "latest",
+    "awscli2": "latest",
+    "docker": "latest",
+    "jq": "latest",
+    "docker-buildx": "latest",
+    "docker-compose": "latest",
+    "kind": "latest",
+    "aws-vault": "latest",
+    "doctl": "latest",
+    "opentofu": "1.7.1",
+    "kubectl": "latest",
+    "k3sup": "latest",
+    "yq": "latest",
+    "helm": {
+      "version": "latest",
+      "excluded_platforms": [
+        "aarch64-darwin"
+      ]
+    },
+    "kustomize": "latest",
+    "kubernetes": {
+      "version": "latest",
+      "excluded_platforms": [
+        "aarch64-darwin"
+      ]
+    },
+    "kubeseal": "latest",
+    "k9s": "latest",
+    "popeye": "latest"
+  },
+  "shell": {
+    "init_hook": [
+      "export PS1='📦 devbox> '",
+      "echo 'Welcome to devbox!' > /dev/null"
+    ],
+    "scripts": {
+      "test": [
+        "echo \"Error: no test specified\" && exit 1"
+      ]
+    }
+  }
+}

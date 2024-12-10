@@ -1,0 +1,11 @@
+[edit]
+    command = "code"
+    args = ["--wait"]
+
+[git]
+    autoCommit = true
+    autoPush = true
+    commitMessageTemplate = "{{ promptString \"conf: update from chezmoi\" }}"
+
+[data]
+    email = "vinh@sudovinh.com"
