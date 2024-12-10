@@ -269,7 +269,7 @@ setup-chezmoi:
 		else \
 			CHEZMOI_TOML=""; \
 		fi; \
-		CHEZMOI_ROOT="$(CONFIGS_DIR)/chezmoi/.chezmoiroot"; \
+		CHEZMOI_ROOT="$(CONFIGS_DIR)/chezmoi/chezmoiroot"; \
 		if [ -n "$$CHEZMOI_TOML" ] && [ -f "$$CHEZMOI_TOML" ]; then \
 			echo "Setting up Chezmoi toml config from $$CHEZMOI_TOML" && \
 			mkdir -p "$(CHEZMOI_CONFIG_DIR)" && \
