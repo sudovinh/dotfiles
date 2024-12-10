@@ -1,4 +1,5 @@
 SHELL := /bin/bash
+DEV_SETUP_REPO := git@github.com:sudovinh/dev_setup.git
 DOTFILES_DIR := $(HOME)/dotfiles
 BREW_DIR := $(DOTFILES_DIR)/brew
 BREWFILE_DEFAULT := $(BREW_DIR)/default
@@ -64,10 +65,10 @@ else
 endif
 
 .PHONY: mac-init
-mac-init: select-profile install-powerline-fonts install-xcode install-homebrew install-devbox install-direnv brew-bundle-default setup-shell setup-brewfile setup-devbox-config setup-chezmoi setup-notes clean-profile
+mac-init: select-profile install-powerline-fonts install-xcode install-homebrew install-devbox install-direnv brew-bundle-default clone-dev-setup setup-shell setup-brewfile setup-devbox-config setup-chezmoi setup-notes clean-profile
 
 .PHONY: linux-init
-linux-init: select-profile install-powerline-fonts install-devbox install-direnv setup-shell setup-devbox-config setup-chezmoi setup-notes clean-profile
+linux-init: select-profile install-powerline-fonts install-devbox install-direnv clone-dev-setup setup-shell setup-devbox-config setup-chezmoi setup-notes clean-profile
 	@echo "Setting up for Linux..."
 	# Add additional Linux setup steps here, such as package manager commands.
 
@@ -196,6 +197,19 @@ setup-devbox-config:
 		fi; \
 	else \
 		echo "No profile selected. Skipping Devbox config setup."; \
+	fi
+
+# for sensitive zsh aliases, functions, etc.
+.PHONE: clone-dev-setup
+clone-dev-setup:
+	@echo "Cloning dev_setup repository..."
+	@REPO_NAME=$$(basename $(DEV_SETUP_REPO) .git); \
+	if [ ! -d $(HOME)/$$REPO_NAME ]; then \
+		echo "Cloning dev_setup repository..."; \
+		git clone $(DEV_SETUP_REPO) $(HOME)/$$REPO_NAME; \
+		echo "dev_setup repo complete."; \
+	else \
+		echo "dev_setup repository already cloned."; \
 	fi
 
 .PHONY: setup-shell
