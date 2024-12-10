@@ -1,0 +1,105 @@
+function code() {
+  VSCODE_CWD="$PWD" open -n -b "com.microsoft.VSCode" --args $* ;
+}
+
+function _getk8secret(){
+  /usr/local/bin/kubectl get secrets $1 -n $2 -o yaml >> $1.yaml
+}
+
+function _createk8secret(){
+  kubectl create secret generic $2 --from-file=$1 --dry-run=true  --output=yaml > $2.yaml
+}
+
+function switchkconfig() {
+  local config
+  local command
+  config="$(ls -1 $HOME/.kube/configs | fzf --height 40% --reverse)"
+
+  if [ -n "$config" ]; then
+    export KUBECONFIG="$HOME/.kube/configs/$config"
+  fi
+
+  echo "Set kubeconfig to $config"
+}
+
+function podsVsNodes() {
+    uniqueNodes=$(kubectl get pod -n $1 -o wide | grep -v NAME | sed 's/ \{1,\}/,/g' | sort --unique -t, -k7,7 | wc -l)
+    pods=$(kubectl get pod -n $1 | grep -v NAME | wc -l)
+    echo "Pods in Namespace: ${pods}\nNodes In Use By Namespace: ${uniqueNodes}"
+}
+
+function _knetworktest() {
+    if [ -n "$1" ]; then
+        img=$1
+    else
+        img='nicolaka/netshoot:latest'
+    fi
+    kubectl run vinh-tmp-shell --rm -i --tty -n tests-vinhn-test-app --image=$img --restart=Never -- /bin/bash
+}
+
+function _newbashscript() { 
+    if [ -z "$2" ]; then 
+        cp ~/scripts/template_bash_script "$1/default_script"; 
+    else 
+        cp ~/scripts/template_bash_script "$1/$2.sh"; 
+    fi; 
+}
+
+function gitcommit() {
+  local commit_type
+  commit_type="$(echo -e "feat\nfix\nchore\nrefactor\ndocs\nstyle\ntest\nperf\nci\nbuild\nrevert" | fzf)"
+
+  if [ -n "$commit_type" ]; then
+    echo "Selected commit type: $commit_type"
+    echo "Enter commit message:"
+    read -r commit_message
+    if [ -n "$commit_message" ]; then
+      git commit -m "$commit_type: $commit_message"
+    else
+      echo "No commit message entered, exiting."
+    fi
+  else
+    echo "No commit type selected, exiting."
+  fi
+}
+
+function gitdeletebranches() {
+  git for-each-ref --sort=-committerdate refs/remotes/origin/ --format="%(refname:short) %(committerdate:unix)" | \
+  grep -v 'origin/HEAD' | grep -v 'origin/main$' | \
+  while read -r refname unixtime; do
+    now_epoch=$(date +%s)
+    age=$(( (now_epoch - unixtime) / 3600 ))
+    if [ "$age" -ge 1 ]; then
+      branch=${refname#origin/}
+      git push origin --delete "$branch"
+    fi
+  done
+}
+
+function aws_profiles() {
+  profiles=$(aws --no-cli-pager configure list-profiles 2> /dev/null)
+  if [[ -z "$profiles" ]]; then
+    echo "No AWS profiles found in '$HOME/.aws/config, check if ~/.aws/config exists and properly configured.'"
+    return 1
+  else
+    echo $profiles
+  fi
+}
+
+gresetbranchremote() {
+    # Get the current branch name
+    local branch_name=$(git rev-parse --abbrev-ref HEAD)
+
+    if [ -z "$branch_name" ]; then
+        echo "Error: Unable to determine the current branch."
+        return 1
+    fi
+
+    echo "Fetching the latest changes from origin..."
+    git fetch origin
+
+    echo "Resetting the local branch '$branch_name' to match 'origin/$branch_name'..."
+    git reset --hard origin/"$branch_name"
+
+    echo "The local branch '$branch_name' is now in sync with 'origin/$branch_name'."
+}
