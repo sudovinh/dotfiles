@@ -98,7 +98,8 @@ plugins=(git gh zsh-autosuggestions zsh-syntax-highlighting direnv)
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-CHEZMOI_DIR=$(HOME)/.local/share/chezmoi
+CHEZMOI_DIR=~/.local/share/chezmoi
+DEV_DIR=~/dev_setup
 
 source $ZSH/oh-my-zsh.sh
 echo "Sourcing zsh-helper config files..."
@@ -110,9 +111,9 @@ source $CHEZMOI_DIR/zsh-helper/.zsh_prompts
 echo "Done sourcing zsh-helper config files."
 # additional source files
 {{ if eq .chezmoi.hostname "vinh-zip" }}
-source $CHEZMOI_DIR/zsh-helper/.zsh_work
+source $DEV_DIR/zsh_work
 {{ else }}
-source $CHEZMOI_DIR/zsh-helper/.zsh_main
+source $DEV_DIR/zsh_main
 {{- end }}
 source <(devbox completion zsh); compdef _devbox devbox
 source <(kubectl completion zsh | sed 's/kubectl/kc/g')
