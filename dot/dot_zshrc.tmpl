@@ -121,3 +121,5 @@ source <(k completion zsh)
 
 eval "$(devbox global shellenv)"
 eval "$(direnv hook zsh)"
+
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
