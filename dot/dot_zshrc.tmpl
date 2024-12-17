@@ -118,8 +118,7 @@ source $DEV_DIR/zsh_main
 source <(devbox completion zsh); compdef _devbox devbox
 source <(kubectl completion zsh | sed 's/kubectl/kc/g')
 source <(k completion zsh)
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 eval "$(devbox global shellenv)"
 eval "$(direnv hook zsh)"
-
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"

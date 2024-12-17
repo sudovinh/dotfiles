@@ -65,7 +65,7 @@ else
 endif
 
 .PHONY: mac-init
-mac-init: select-profile install-powerline-fonts install-xcode install-homebrew setup-chezmoi install-devbox install-direnv brew-bundle-default clone-dev-setup setup-shell setup-brewfile setup-devbox-config setup-notes clean-profile
+mac-init: select-profile install-powerline-fonts install-xcode install-homebrew setup-iterm2-shell-integration setup-chezmoi install-devbox install-direnv brew-bundle-default clone-dev-setup setup-shell setup-brewfile setup-devbox-config setup-notes clean-profile
 
 .PHONY: linux-init
 linux-init: select-profile install-powerline-fonts install-devbox install-direnv clone-dev-setup setup-shell setup-devbox-config setup-chezmoi setup-notes clean-profile
@@ -126,6 +126,47 @@ install-homebrew:
 	@which brew > /dev/null 2>&1 || (echo "Installing Homebrew..." && /bin/bash -c "$$(curl -fsSL $(HOMEBREW_URL))")
 	@eval "$$(/opt/homebrew/bin/brew shellenv)"
 	@echo "Homebrew installation complete."
+
+.PHONY: setup-iterm2-shell-integration
+setup-iterm2-shell-integration:
+	@echo "Setting up iTerm2 shell integration..."
+	@curl -L https://iterm2.com/shell_integration/zsh -o ~/.iterm2_shell_integration.zsh
+	@echo "iTerm2 shell integration setup complete."
+
+.PHONY: setup-chezmoi
+setup-chezmoi:
+	@echo "Configuring chezmoi..."
+	@if [ ! -d "$(CHEZMOI_DIR)" ]; then \
+		echo "Initializing chezmoi for the first time..." && \
+		chezmoi init --apply $(GIT_USER); \
+	else \
+		echo "Chezmoi already initialized. Pulling updates from the repository..." && \
+		chezmoi git pull; \
+	fi
+	@echo "Copying chezmoi toml config..."
+	@bash -c 'if [ -f .profile-choice ]; then \
+		PROFILE_CHOICE=$$(cat .profile-choice); \
+		if [ "$$PROFILE_CHOICE" = "main" ]; then \
+			CHEZMOI_TOML="$(CONFIGS_DIR)/chezmoi/main.toml"; \
+		elif [ "$$PROFILE_CHOICE" = "work" ]; then \
+			CHEZMOI_TOML="$(CONFIGS_DIR)/chezmoi/work.toml"; \
+		else \
+			CHEZMOI_TOML=""; \
+		fi; \
+		CHEZMOI_ROOT="$(CONFIGS_DIR)/chezmoi/chezmoiroot"; \
+		if [ -n "$$CHEZMOI_TOML" ] && [ -f "$$CHEZMOI_TOML" ]; then \
+			echo "Setting up Chezmoi toml config from $$CHEZMOI_TOML" && \
+			mkdir -p "$(CHEZMOI_CONFIG_DIR)" && \
+			ln -sf "$$CHEZMOI_TOML" "$(CHEZMOI_CONFIG_DIR)/chezmoi.toml" && \
+			ln -sf "$$CHEZMOI_ROOT" "$(CHEZMOI_DIR)/.chezmoiroot" && \
+			echo "Chezmoi toml config linked to $$CHEZMOI_TOML"; \
+		else \
+			echo "Skipping Chezmoi toml config setup. Invalid or missing file."; \
+		fi; \
+	else \
+		echo "No profile selected. Skipping Chezmoi toml config setup."; \
+	fi'
+	@echo "Chezmoi setup complete."
 
 .PHONY: install-devbox
 install-devbox:
@@ -248,41 +289,6 @@ install-oh-my-zsh-plugins:
 		fi; \
 	done
 	@echo "Oh My Zsh plugins installation complete."
-
-.PHONY: setup-chezmoi
-setup-chezmoi:
-	@echo "Configuring chezmoi..."
-	@if [ ! -d "$(CHEZMOI_DIR)" ]; then \
-		echo "Initializing chezmoi for the first time..." && \
-		chezmoi init --apply $(GIT_USER); \
-	else \
-		echo "Chezmoi already initialized. Pulling updates from the repository..." && \
-		chezmoi git pull; \
-	fi
-	@echo "Copying chezmoi toml config..."
-	@bash -c 'if [ -f .profile-choice ]; then \
-		PROFILE_CHOICE=$$(cat .profile-choice); \
-		if [ "$$PROFILE_CHOICE" = "main" ]; then \
-			CHEZMOI_TOML="$(CONFIGS_DIR)/chezmoi/main.toml"; \
-		elif [ "$$PROFILE_CHOICE" = "work" ]; then \
-			CHEZMOI_TOML="$(CONFIGS_DIR)/chezmoi/work.toml"; \
-		else \
-			CHEZMOI_TOML=""; \
-		fi; \
-		CHEZMOI_ROOT="$(CONFIGS_DIR)/chezmoi/chezmoiroot"; \
-		if [ -n "$$CHEZMOI_TOML" ] && [ -f "$$CHEZMOI_TOML" ]; then \
-			echo "Setting up Chezmoi toml config from $$CHEZMOI_TOML" && \
-			mkdir -p "$(CHEZMOI_CONFIG_DIR)" && \
-			ln -sf "$$CHEZMOI_TOML" "$(CHEZMOI_CONFIG_DIR)/chezmoi.toml" && \
-			ln -sf "$$CHEZMOI_ROOT" "$(CHEZMOI_DIR)/.chezmoiroot" && \
-			echo "Chezmoi toml config linked to $$CHEZMOI_TOML"; \
-		else \
-			echo "Skipping Chezmoi toml config setup. Invalid or missing file."; \
-		fi; \
-	else \
-		echo "No profile selected. Skipping Chezmoi toml config setup."; \
-	fi'
-	@echo "Chezmoi setup complete."
 
 .PHONE: setup-notes
 setup-notes:
