@@ -86,7 +86,7 @@ function aws_profiles() {
   fi
 }
 
-gresetbranchremote() {
+function gresetbranchremote() {
     # Get the current branch name
     local branch_name=$(git rev-parse --abbrev-ref HEAD)
 
@@ -102,4 +102,15 @@ gresetbranchremote() {
     git reset --hard origin/"$branch_name"
 
     echo "The local branch '$branch_name' is now in sync with 'origin/$branch_name'."
+}
+
+find_merge() {
+  commit=$1
+  branch=${2:-HEAD}
+  (git rev-list $commit..$branch --ancestry-path | cat -n; git rev-list $commit..$branch --first-parent | cat -n) | sort -k2 -s | uniq -f1 -d | sort -n | tail -1 | cut -f2
+}
+
+show_merge() {
+  merge=$(find_merge $1 $2)
+  [ -n "$merge" ] && git show $merge
 }

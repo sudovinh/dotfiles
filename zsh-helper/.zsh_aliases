@@ -38,8 +38,6 @@ alias gresetcommit='git reset HEAD~'
 alias gitsubmitplz='git-submit --force-with-lease --ignore-multiple-codeowners-groups-warning $1'
 alias gitlogline='git log --oneline origin/main..HEAD'
 alias git-reset-pull="git checkout \$1 && git fetch origin && git reset --hard origin/\$1 && git pull origin \$1"
-alias find-merge="!sh -c 'commit=$0 && branch=${1:-HEAD} && (git rev-list $commit..$branch --ancestry-path | cat -n; git rev-list $commit..$branch --first-parent | cat -n) | sort -k2 -s | uniq -f1 -d | sort -n | tail -1 | cut -f2'"
-alias show-merge="!sh -c 'merge=$(git find-merge $0 $1) && [ -n \"$merge\" ] && git show $merge'"
 
 ## AWS commands
 alias unsetaws='unset AWS_DEFAULT_PROFILE AWS_PROFILE AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN'
@@ -68,4 +66,3 @@ alias k8snetshoot="kubectl run -it vinh-test --image=nicolaka/netshoot --restart
 alias kgetevents='kubectl get events --namespace $1 --sort-by=".metadata.creationTimestamp"'
 alias kgetallresources='kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get -n $1'
 alias kgetpodsinnode='kubectl get pods --all-namespaces -o wide | grep $1'
-
