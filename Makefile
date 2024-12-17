@@ -6,7 +6,7 @@ BREWFILE_DEFAULT := $(BREW_DIR)/default
 CHEZMOI_CONFIG_DIR := $(HOME)/.config/chezmoi
 CHEZMOI_DIR := $(HOME)/.local/share/chezmoi
 CONFIGS_DIR := $(DOTFILES_DIR)/configs
-DEVBOX_CONFIG_DIR := $(DOTFILES_DIR)/devbox
+DEVBOX_CONFIG_DIR := $(CHEZMOI_DIR)/devbox
 DEVBOX_INSTALL_SCRIPT := https://get.jetify.com/devbox
 DIRENV_INSTALL_SCRIPT := https://direnv.net/install.sh
 DEVBOX_GLOBAL_CONFIG := $(HOME)/.local/share/devbox/global/default
@@ -65,7 +65,7 @@ else
 endif
 
 .PHONY: mac-init
-mac-init: select-profile install-powerline-fonts install-xcode install-homebrew install-devbox install-direnv brew-bundle-default clone-dev-setup setup-shell setup-brewfile setup-devbox-config setup-chezmoi setup-notes clean-profile
+mac-init: select-profile install-powerline-fonts install-xcode install-homebrew setup-chezmoi install-devbox install-direnv brew-bundle-default clone-dev-setup setup-shell setup-brewfile setup-devbox-config setup-notes clean-profile
 
 .PHONY: linux-init
 linux-init: select-profile install-powerline-fonts install-devbox install-direnv clone-dev-setup setup-shell setup-devbox-config setup-chezmoi setup-notes clean-profile
