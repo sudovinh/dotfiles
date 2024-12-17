@@ -3,7 +3,7 @@ function code() {
 }
 
 function _getk8secret(){
-  /usr/local/bin/kubectl get secrets $1 -n $2 -o yaml >> $1.yaml
+  kubectl get secrets $1 -n $2 -o yaml >> $1.yaml
 }
 
 function _createk8secret(){

@@ -9,7 +9,7 @@ alias plz="arch -x86_64 $1"
 alias showFiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app'
 alias hideFiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app'
 IP=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
-alias zshconfig="code ~/.zshrc"
+alias zshconfig="chezmoi edit ~/.zshrc"
 alias check-sha256="shasum -a 256 $1"
 alias check-sha1="shasum -a 1 $1"
 alias check-md5="md5 $1"
@@ -22,7 +22,9 @@ alias curltime="curl -o /dev/null -s -w 'Establish Connection: %{time_connect}s\
 alias flushmydns="sudo dscacheutil -flushcache;sudo killall -HUP mDNSResponder"
 alias showpublicip='curl ifconfig.me 2>/dev/null | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"'
 alias createbashscript='_newbashscript'
-alias cdotfiles='cd ~/dotfiles'
+alias dotfiles='cd ~/dotfiles'
+alias chezmoidir='cd ~/.local/share/chezmoi'
+alias chz='/Users/$(whoami)/.local/share/devbox/global/default/.devbox/nix/profile/default/bin/chezmoi'
 
 ## GIT commands
 alias gpush="git push origin HEAD"
@@ -36,6 +38,8 @@ alias gresetcommit='git reset HEAD~'
 alias gitsubmitplz='git-submit --force-with-lease --ignore-multiple-codeowners-groups-warning $1'
 alias gitlogline='git log --oneline origin/main..HEAD'
 alias git-reset-pull="git checkout \$1 && git fetch origin && git reset --hard origin/\$1 && git pull origin \$1"
+alias find-merge="!sh -c 'commit=$0 && branch=${1:-HEAD} && (git rev-list $commit..$branch --ancestry-path | cat -n; git rev-list $commit..$branch --first-parent | cat -n) | sort -k2 -s | uniq -f1 -d | sort -n | tail -1 | cut -f2'"
+alias show-merge="!sh -c 'merge=$(git find-merge $0 $1) && [ -n \"$merge\" ] && git show $merge'"
 
 ## AWS commands
 alias unsetaws='unset AWS_DEFAULT_PROFILE AWS_PROFILE AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN'
