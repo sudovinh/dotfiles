@@ -114,3 +114,17 @@ show_merge() {
   merge=$(find_merge $1 $2)
   [ -n "$merge" ] && git show $merge
 }
+
+encode2json() {
+  if [[ -z "$1" ]]; then
+    echo "Usage: encodefile <file-path>"
+    return 1
+  fi
+
+  if [[ ! -f "$1" ]]; then
+    echo "Error: File '$1' not found"
+    return 1
+  fi
+
+  cat "$1" | base64 | jq -R --arg type "opaque" '{type: $type, value: .}'
+}
