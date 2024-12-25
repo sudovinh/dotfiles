@@ -209,6 +209,54 @@
         }
       }
     },
+    "crossplane-cli@latest": {
+      "last_modified": "2024-12-13T21:43:23Z",
+      "resolved": "github:NixOS/nixpkgs/71a6392e367b08525ee710a93af2e80083b5b3e2#crossplane-cli",
+      "source": "devbox-search",
+      "version": "1.18.1",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/874w2v6k7wkzk53yga9m0igkiy3k3ahz-crossplane-cli-1.18.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/874w2v6k7wkzk53yga9m0igkiy3k3ahz-crossplane-cli-1.18.1"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/n1flv25m9y5ysbjc12ka9qhbkvsqhc1a-crossplane-cli-1.18.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/n1flv25m9y5ysbjc12ka9qhbkvsqhc1a-crossplane-cli-1.18.1"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/0qgwl2p5zvrf3nmdb9sj5rqq3n2xihfc-crossplane-cli-1.18.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/0qgwl2p5zvrf3nmdb9sj5rqq3n2xihfc-crossplane-cli-1.18.1"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/d1kvcqnjxm4id9azgiwxls70apri9rqg-crossplane-cli-1.18.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/d1kvcqnjxm4id9azgiwxls70apri9rqg-crossplane-cli-1.18.1"
+        }
+      }
+    },
     "cue@latest": {
       "last_modified": "2024-09-10T15:01:03Z",
       "resolved": "github:NixOS/nixpkgs/5ed627539ac84809c78b2dd6d26a5cebeb5ae269#cue",
@@ -1228,6 +1276,54 @@
             }
           ],
           "store_path": "/nix/store/kfwa3x3v9b51j2nszh61adm447jv4nvk-ripgrep-14.1.1"
+        }
+      }
+    },
+    "s5cmd@latest": {
+      "last_modified": "2024-12-03T12:40:06Z",
+      "resolved": "github:NixOS/nixpkgs/566e53c2ad750c84f6d31f9ccb9d00f823165550#s5cmd",
+      "source": "devbox-search",
+      "version": "2.2.2",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/3gj7mw47gyv9qhxllvp7p4bs6x2bnkkz-s5cmd-2.2.2",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/3gj7mw47gyv9qhxllvp7p4bs6x2bnkkz-s5cmd-2.2.2"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/b2wyf750das6jfza0s7an5x0m1dhlhmg-s5cmd-2.2.2",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/b2wyf750das6jfza0s7an5x0m1dhlhmg-s5cmd-2.2.2"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/s51nbmjsg35pjgcs76b7lkgjrr7nm3k3-s5cmd-2.2.2",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/s51nbmjsg35pjgcs76b7lkgjrr7nm3k3-s5cmd-2.2.2"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/x7962xdjhb06q5515xawnryp5v8dyysd-s5cmd-2.2.2",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/x7962xdjhb06q5515xawnryp5v8dyysd-s5cmd-2.2.2"
         }
       }
     },

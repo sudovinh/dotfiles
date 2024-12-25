@@ -46,7 +46,9 @@
     "etcdctl":               "latest",
     "yamllint":              "latest",
     "awscli2":               "latest",
-    "yq":                    "latest"
+    "yq":                    "latest",
+    "crossplane-cli":        "latest",
+    "s5cmd":                 "latest"
   },
   "shell": {
     "init_hook": [
