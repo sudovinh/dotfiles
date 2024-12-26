@@ -4,7 +4,7 @@ alias killssh='killall ssh-agent; eval \"$(ssh-agent)\"'
 alias resetssh='ssh-add -D'
 
 ##Easy commands
-alias sourcezsh='source ~/.zshrc'
+alias sourcezsh='chezmoi update && cd ~/dev_setup && git pull && cd ~/ && source ~/.zshrc'
 alias plz="arch -x86_64 $1"
 alias showFiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app'
 alias hideFiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app'
@@ -22,8 +22,8 @@ alias curltime="curl -o /dev/null -s -w 'Establish Connection: %{time_connect}s\
 alias flushmydns="sudo dscacheutil -flushcache;sudo killall -HUP mDNSResponder"
 alias showpublicip='curl ifconfig.me 2>/dev/null | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"'
 alias createbashscript='_newbashscript'
-alias dotfiles='cd ~/dotfiles'
-alias chezmoidir='cd ~/.local/share/chezmoi'
+alias devsetup='cd ~/dev_setup'
+alias dotfile='cd ~/.local/share/chezmoi'
 alias chz='/opt/homebrew/bin/chezmoi'
 
 ## GIT commands
