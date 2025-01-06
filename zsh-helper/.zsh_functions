@@ -10,6 +10,15 @@ function _createk8secret(){
   kubectl create secret generic $2 --from-file=$1 --dry-run=true  --output=yaml > $2.yaml
 }
 
+function codezshfiles() {
+  local zshfile
+  zshfile="$(find $HOME/.local/share/chezmoi/zsh-helper -type f -name '.*' | fzf --height 40% --reverse)"
+
+  if [ -n "$zshfile" ]; then
+    code $zshfile
+  fi
+}
+
 function switchkconfig() {
   local config
   local command
