@@ -1,3 +1,12 @@
+function updatezsh() {
+  current_dir=$(pwd)
+  chezmoi update
+  cd ~/dev_setup && git pull
+  cd $current_dir
+  source ~/.zshrc
+  refresh-global
+}
+
 function code() {
   VSCODE_CWD="$PWD" open -n -b "com.microsoft.VSCode" --args $* ;
 }

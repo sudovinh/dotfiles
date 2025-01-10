@@ -4,7 +4,7 @@ alias killssh='killall ssh-agent; eval \"$(ssh-agent)\"'
 alias resetssh='ssh-add -D'
 
 ##Easy commands
-alias sourcezsh='chezmoi update && cd ~/dev_setup && git pull && cd ~/ && source ~/.zshrc && refresh-global'
+alias sourcezsh='source ~/.zshrc && refresh-global'
 alias plz="arch -x86_64 $1"
 alias showFiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app'
 alias hideFiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app'
@@ -70,3 +70,6 @@ alias k8snetshoot="kubectl run -it vinh-test --image=nicolaka/netshoot --restart
 alias kgetevents='kubectl get events --namespace $1 --sort-by=".metadata.creationTimestamp"'
 alias kgetallresources='kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get -n $1'
 alias kgetpodsinnode='kubectl get pods --all-namespaces -o wide | grep $1'
+
+## Test commands
+alias check_github_api="op run --account='team-ziprecruiter.1password.com' --env-file='/Users/vinhn/1p-envs/mcp' -- sh -c 'curl -L -H \"Accept: application/vnd.github+json\" -H \"Authorization: Bearer \$GITHUB_API_TOKEN\" -H \"X-GitHub-Api-Version: 2022-11-28\" https://api.github.com/user'"
