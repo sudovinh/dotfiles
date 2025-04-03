@@ -12,12 +12,12 @@
         "aarch64-darwin"
       ]
     },
-    "vulnix": "latest",
-    "ripgrep": "latest",
+    "vulnix":     "latest",
+    "ripgrep":    "latest",
     "shellcheck": "latest",
-    "htop": "latest",
-    "jq": "latest",
-    "cue": "latest",
+    "htop":       "latest",
+    "jq":         "latest",
+    "cue":        "latest",
     "kubernetes": {
       "version": "latest",
       "excluded_platforms": [
@@ -25,36 +25,37 @@
       ]
     },
     "trufflehog": "latest",
-    "wget": "latest",
-    "fzf": "latest",
+    "wget":       "latest",
+    "fzf":        "latest",
     "helm": {
       "version": "latest",
       "excluded_platforms": [
         "aarch64-darwin"
       ]
     },
-    "tree": "latest",
-    "k9s": "latest",
-    "kustomize": "latest",
+    "tree":                  "latest",
+    "k9s":                   "latest",
+    "kustomize":             "latest",
     "git-remote-codecommit": "latest",
-    "openjdk": "latest",
-    "pyenv": "latest",
-    "tmux": "latest",
-    "gh": "latest",
-    "_1password": "latest",
-    "argocd": "latest",
-    "nodejs": "latest",
-    "python": "latest",
-    "docker": "latest",
-    "colima": "latest",
-    "kubectl": "latest",
-    "kops": "latest",
-    "etcdctl": "latest",
-    "yamllint": "latest",
-    "awscli2": "latest",
-    "yq": "latest",
-    "crossplane-cli": "latest",
-    "s5cmd": "latest"
+    "openjdk":               "latest",
+    "pyenv":                 "latest",
+    "tmux":                  "latest",
+    "gh":                    "latest",
+    "_1password":            "latest",
+    "argocd":                "latest",
+    "nodejs":                "latest",
+    "python":                "latest",
+    "docker":                "latest",
+    "colima":                "latest",
+    "kubectl":               "latest",
+    "kops":                  "latest",
+    "etcdctl":               "latest",
+    "yamllint":              "latest",
+    "awscli2":               "latest",
+    "yq":                    "latest",
+    "crossplane-cli":        "latest",
+    "s5cmd":                 "latest",
+    "git-sizer":             "latest"
   },
   "shell": {
     "init_hook": [

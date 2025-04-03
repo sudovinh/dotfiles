@@ -567,6 +567,54 @@
         }
       }
     },
+    "git-sizer@latest": {
+      "last_modified": "2025-03-11T17:52:14Z",
+      "resolved": "github:NixOS/nixpkgs/0d534853a55b5d02a4ababa1d71921ce8f0aee4c#git-sizer",
+      "source": "devbox-search",
+      "version": "1.5.0",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/sf624swxnwdkbcv4fazfls1rhg0zzd4g-git-sizer-1.5.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/sf624swxnwdkbcv4fazfls1rhg0zzd4g-git-sizer-1.5.0"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/m9dnbs8yn6mb35pygj15kavp0i8lzxbq-git-sizer-1.5.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/m9dnbs8yn6mb35pygj15kavp0i8lzxbq-git-sizer-1.5.0"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/dzg6c4s2g8pmxhdn4c8sgpnnqzqwx9y1-git-sizer-1.5.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/dzg6c4s2g8pmxhdn4c8sgpnnqzqwx9y1-git-sizer-1.5.0"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/qdlkn8m66mymr919v39gg3ylmq0fxwl7-git-sizer-1.5.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/qdlkn8m66mymr919v39gg3ylmq0fxwl7-git-sizer-1.5.0"
+        }
+      }
+    },
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
       "resolved": "github:NixOS/nixpkgs/f0295845e58ada369322524631821b01c0db13a7?lastModified=1739834344&narHash=sha256-PUAcU3YlKNFYrBBHkqshO4wRfMunzhMTEIH1dyhjTtk%3D"
     },
