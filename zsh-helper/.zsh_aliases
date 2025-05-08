@@ -74,5 +74,6 @@ alias kgetevents='kubectl get events --namespace $1 --sort-by=".metadata.creatio
 alias kgetallresources='kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get -n $1'
 alias kgetpodsinnode='kubectl get pods --all-namespaces -o wide | grep $1'
 alias kgetownerref='f(){ kubectl get sts -n "$1" -o json | jq -r ".items[] | [.metadata.name, .metadata.ownerReferences[0].kind, .metadata.ownerReferences[0].name] | @tsv"; unset -f f; }; f'
+alias kgetnodestypes='k get no --sort-by=.metadata.creationTimestamp -L kops.k8s.io/instance-group,topology.kubernetes.io/zone,karpenter.sh/capacity-type'
 
 ## Test commands
