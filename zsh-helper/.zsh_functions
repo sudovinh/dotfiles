@@ -146,3 +146,273 @@ function encode2json() {
 
   cat "$1" | base64 | jq -R --arg type "opaque" '{type: $type, value: .}'
 }
+
+# thanks ssoriche
+# https://github.com/ssoriche/kubectl.fish/blob/main/functions/kubectl-why-not-deleted.fish
+function k-why-not-deleted() {
+    # Handle help option first
+    if [[ " $* " =~ " --help " ]] || [[ " $* " =~ " -h " ]]; then
+        echo "kubectl-why-not-deleted - Analyze why a Kubernetes resource is not being deleted"
+        echo ""
+        echo "USAGE:"
+        echo "  kubectl-why-not-deleted RESOURCE NAME [-n NAMESPACE]"
+        echo ""
+        echo "DESCRIPTION:"
+        echo "  This function analyzes why a Kubernetes resource is not being deleted by checking"
+        echo "  for finalizers, owner references, dependent resources, and providing actionable"
+        echo "  insights. It helps debug stuck deletions by examining the resource's metadata"
+        echo "  and relationships with other resources."
+        echo ""
+        echo "EXAMPLES:"
+        echo "  kubectl-why-not-deleted pod my-pod"
+        echo "  kubectl-why-not-deleted deployment my-app -n production"
+        echo "  kubectl-why-not-deleted pvc my-volume-claim"
+        echo "  kubectl-why-not-deleted namespace my-namespace"
+        echo ""
+        echo "DEPENDENCIES:"
+        echo "  - kubectl: Kubernetes command-line tool"
+        echo "  - jq: JSON processor for parsing resource metadata"
+        echo ""
+        echo "INSTALLATION:"
+        echo "  # macOS"
+        echo "  brew install jq"
+        echo ""
+        echo "  # Ubuntu/Debian"
+        echo "  sudo apt-get install jq"
+        return 0
+    fi
+
+    # Check if we have the required arguments
+    if [[ $# -lt 2 ]]; then
+        echo "Error: Insufficient arguments provided" >&2
+        echo "Usage: kubectl-why-not-deleted RESOURCE NAME [-n NAMESPACE]" >&2
+        echo "Use 'kubectl-why-not-deleted --help' for more information" >&2
+        return 1
+    fi
+
+    # Check if kubectl is available
+    if ! command -v kubectl >/dev/null 2>&1; then
+        echo "Error: kubectl is not installed or not in PATH" >&2
+        echo "Please install kubectl to use this function" >&2
+        return 1
+    fi
+
+    # Check if jq is available
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "Error: jq is required but not installed" >&2
+        echo "Install with: brew install jq (macOS) or apt-get install jq (Ubuntu)" >&2
+        return 1
+    fi
+
+    local resource_type="$1"
+    local resource_name="$2"
+    local namespace_args=""
+
+    # Convert common plural resource types to singular
+    case "$resource_type" in
+        jobs) resource_type="job" ;;
+        pods) resource_type="pod" ;;
+        deployments) resource_type="deployment" ;;
+        services) resource_type="service" ;;
+        configmaps) resource_type="configmap" ;;
+        secrets) resource_type="secret" ;;
+        persistentvolumeclaims|pvcs) resource_type="persistentvolumeclaim" ;;
+        namespaces) resource_type="namespace" ;;
+        replicasets) resource_type="replicaset" ;;
+        statefulsets) resource_type="statefulset" ;;
+        daemonsets) resource_type="daemonset" ;;
+        ingresses) resource_type="ingress" ;;
+        services) resource_type="service" ;;
+        endpoints) resource_type="endpoints" ;;
+        events) resource_type="events" ;;
+        nodes) resource_type="node" ;;
+        persistentvolumes|pvs) resource_type="persistentvolume" ;;
+        storageclasses) resource_type="storageclass" ;;
+        clusterroles) resource_type="clusterrole" ;;
+        clusterrolebindings) resource_type="clusterrolebinding" ;;
+        roles) resource_type="role" ;;
+        rolebindings) resource_type="rolebinding" ;;
+        serviceaccounts) resource_type="serviceaccount" ;;
+        crds) resource_type="crd" ;;
+        customresourcedefinitions) resource_type="customresourcedefinition" ;;
+    esac
+
+    # Parse namespace argument if provided
+    shift 2  # Remove the first two arguments (resource_type and resource_name)
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -n|--namespace)
+                if [[ $# -gt 1 ]]; then
+                    namespace_args="-n$2"
+                    shift 2
+                else
+                    echo "Error: -n/--namespace requires a value" >&2
+                    return 1
+                fi
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+
+    echo "🔍 Analyzing why $resource_type/$resource_name is not being deleted..."
+    echo ""
+
+    # Get the resource in JSON format
+    local resource_json
+    local kubectl_exit_status
+    resource_json=$(kubectl get "$resource_type" "$resource_name" $namespace_args -o json 2>/dev/null)
+    kubectl_exit_status=$?
+
+    if [[ $kubectl_exit_status -ne 0 ]]; then
+        echo "❌ Error: Could not find $resource_type/$resource_name"
+        if [[ -z "$namespace_args" ]]; then
+            echo "   Try specifying a namespace with -n <namespace>"
+        fi
+        return 1
+    fi
+
+    # Check if resource is marked for deletion
+    local deletion_timestamp
+    deletion_timestamp=$(kubectl get "$resource_type" "$resource_name" $namespace_args -o jsonpath='{.metadata.deletionTimestamp}' 2>/dev/null)
+    
+    # Also check for finalizers to see if they exist
+    local finalizers_check
+    finalizers_check=$(kubectl get "$resource_type" "$resource_name" $namespace_args -o jsonpath='{.metadata.finalizers}' 2>/dev/null)
+
+    if [[ -z "$deletion_timestamp" ]] || [[ "$deletion_timestamp" == "null" ]]; then
+        echo "ℹ️  Resource is NOT marked for deletion"
+        echo "   The resource has not received a delete request yet."
+        echo "   Use 'kubectl delete $resource_type $resource_name -n ${namespace_args#-n}' to delete it."
+        return 0
+    fi
+
+    echo "🗑️  Resource IS marked for deletion (since: $deletion_timestamp)"
+    echo ""
+
+    # Check for finalizers
+    local finalizers
+    finalizers=$(kubectl get "$resource_type" "$resource_name" $namespace_args -o jsonpath='{.metadata.finalizers[*]}' 2>/dev/null)
+
+    if [[ -n "$finalizers" ]]; then
+        echo "🔒 FINALIZERS blocking deletion:"
+        echo "$finalizers" | tr ' ' '\n' | while read -r finalizer; do
+            if [[ -n "$finalizer" ]]; then
+                echo "   • $finalizer"
+            fi
+        done
+        echo ""
+        echo "💡 Finalizers must be processed by their respective controllers before deletion can complete."
+        echo "   Common solutions:"
+        echo "   - Wait for controllers to process finalizers"
+        echo "   - Check controller logs for errors"
+        echo "   - As last resort, manually remove finalizers (DANGEROUS):"
+        echo "     kubectl patch $resource_type $resource_name -n ${namespace_args#-n} --type='merge' -p '{\"metadata\":{\"finalizers\":null}}'"
+        echo ""
+    else
+        echo "✅ No finalizers blocking deletion"
+        echo ""
+    fi
+
+    # Check for owner references
+    local owner_refs
+    owner_refs=$(kubectl get "$resource_type" "$resource_name" $namespace_args -o jsonpath='{range .metadata.ownerReferences[*]}{.kind}/{.name}{"\n"}{end}' 2>/dev/null)
+
+    if [[ -n "$owner_refs" ]]; then
+        echo "👑 OWNER REFERENCES:"
+        echo "$owner_refs" | while read -r owner; do
+            if [[ -n "$owner" ]]; then
+                echo "   • Owned by: $owner"
+
+                # Check if owner still exists
+                local owner_kind
+                local owner_name
+                owner_kind=$(echo "$owner" | cut -d'/' -f1)
+                owner_name=$(echo "$owner" | cut -d'/' -f2)
+
+                local owner_exists
+                owner_exists=$(kubectl get "$owner_kind" "$owner_name" -n "${namespace_args#-n}" -o name 2>/dev/null)
+                if [[ -n "$owner_exists" ]]; then
+                    local owner_deletion
+                    owner_deletion=$(kubectl get "$owner_kind" "$owner_name" -n "${namespace_args#-n}" -o jsonpath='{.metadata.deletionTimestamp}' 2>/dev/null)
+                    if [[ -n "$owner_deletion" ]]; then
+                        echo "     Status: Owner is also marked for deletion ($owner_deletion)"
+                    else
+                        echo "     Status: Owner still exists and is NOT marked for deletion"
+                    fi
+                else
+                    echo "     Status: Owner no longer exists"
+                fi
+            fi
+        done
+        echo ""
+        echo "💡 Resources with owner references are typically deleted when their owner is deleted."
+        echo ""
+    else
+        echo "✅ No owner references"
+        echo ""
+    fi
+
+    # Check for dependent resources (resources that this one owns)
+    local resource_uid
+    resource_uid=$(kubectl get "$resource_type" "$resource_name" $namespace_args -o jsonpath='{.metadata.uid}' 2>/dev/null)
+
+    if [[ -n "$resource_uid" ]]; then
+        echo "🔗 Checking for DEPENDENT RESOURCES..."
+
+        # Get all resources in the namespace that might be owned by this resource
+        local dependents=()
+
+        # Common resource types that might have owner references
+        local resource_types=("pods" "replicasets" "deployments" "services" "configmaps" "secrets" "persistentvolumeclaims")
+
+        for rt in "${resource_types[@]}"; do
+            local owned_resources
+            owned_resources=$(kubectl get "$rt" -n "${namespace_args#-n}" -o jsonpath='{range .items[?(@.metadata.ownerReferences[0].uid=="'$resource_uid'")]}{.kind}/{.metadata.name}{"\n"}{end}' 2>/dev/null)
+
+            if [[ -n "$owned_resources" ]]; then
+                echo "$owned_resources" | while read -r dep; do
+                    if [[ -n "$dep" ]]; then
+                        dependents+=("$dep")
+                    fi
+                done
+            fi
+        done
+
+        if [[ ${#dependents[@]} -gt 0 ]]; then
+            echo "   Found dependent resources:"
+            for dep in "${dependents[@]}"; do
+                echo "   • $dep"
+            done
+            echo ""
+            echo "💡 These dependent resources should be deleted automatically with cascade deletion."
+        else
+            echo "   ✅ No dependent resources found"
+        fi
+        echo ""
+    fi
+
+    # Final summary and recommendations
+    echo "📋 SUMMARY:"
+
+    if [[ -n "$finalizers" ]]; then
+        echo "   🔴 Deletion blocked by finalizers"
+        echo "   🎯 Action needed: Wait for controllers to process finalizers or investigate controller issues"
+    elif [[ -n "$owner_refs" ]]; then
+        echo "   🟡 Resource has owner references"
+        echo "   🎯 Typically handled automatically when owner is deleted"
+    else
+        echo "   🟢 No obvious blockers found"
+        echo "   🎯 Resource should complete deletion soon"
+    fi
+
+    echo ""
+    echo "🔧 Useful debugging commands:"
+    echo "   kubectl describe $resource_type $resource_name -n ${namespace_args#-n}"
+    echo "   kubectl get events -n ${namespace_args#-n} --field-selector involvedObject.name=$resource_name"
+
+    if [[ -n "$finalizers" ]]; then
+        echo "   kubectl get $resource_type $resource_name -n ${namespace_args#-n} -o yaml | grep -A5 finalizers"
+    fi
+}
