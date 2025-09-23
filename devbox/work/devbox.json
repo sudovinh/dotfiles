@@ -55,12 +55,15 @@
     "yq":                    "latest",
     "crossplane-cli":        "latest",
     "s5cmd":                 "latest",
-    "git-sizer":             "latest"
+    "git-sizer":             "latest",
+    "python313Packages.pip": "latest",
+    "prometheus":            "latest"
   },
   "shell": {
     "init_hook": [
       "export PS1='📦 devbox> '",
-      "echo 'Welcome to devbox!' > /dev/null"
+      "echo 'Welcome to devbox!' > /dev/null",
+      ". $VENV_DIR/bin/activate"
     ],
     "scripts": {
       "test": [

@@ -1,8 +1,8 @@
 tap "argoproj/tap"
-tap "cloudquery/tap"
+tap "oktadeveloper/tap"
 tap "common-fate/granted"
 brew "unbound"
 brew "colima", restart_service: true
 brew "argoproj/tap/kubectl-argo-rollouts"
-brew "cloudquery/tap/cloudquery"
 brew "kreuzwerker/taps/m1-terraform-provider-helper"
+cask "okta"

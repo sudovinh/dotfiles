@@ -52,7 +52,7 @@ function _knetworktest() {
     else
         img='nicolaka/netshoot:latest'
     fi
-    kubectl run vinh-tmp-shell --rm -i --tty -n tests-vinhn-test-app --image=$img --restart=Never -- /bin/bash
+    kubectl run vinh-tmp-shell --rm -i --tty -n examples--emojivoto --image=$img --restart=Never -- /bin/bash
 }
 
 function _newbashscript() { 
