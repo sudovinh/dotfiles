@@ -416,3 +416,39 @@ function k-why-not-deleted() {
         echo "   kubectl get $resource_type $resource_name -n ${namespace_args#-n} -o yaml | grep -A5 finalizers"
     fi
 }
+
+kgpodsnodes() {
+    local namespace="$1"
+    
+    if [[ -z "$namespace" ]]; then
+        echo "Usage: check_namespace_nodes <namespace>"
+        echo "Example: check_namespace_nodes web--jobboard"
+        return 1
+    fi
+    
+    echo "=== PODS IN NAMESPACE: $namespace ==="
+    kubectl get pods -n "$namespace" -o custom-columns=\
+"POD NAME:.metadata.name,\
+NODE:.spec.nodeName,\
+STATUS:.status.phase,\
+NODE_LABELS:.spec.nodeSelector"
+    
+    echo ""
+    echo "=== NODE ARCHITECTURES ==="
+    
+    # Get unique nodes that have pods from this namespace
+    local nodes=$(kubectl get pods -n "$namespace" -o jsonpath='{.items[*].spec.nodeName}' | tr ' ' '\n' | sort -u | xargs)
+    
+    if [[ -z "$nodes" ]]; then
+        echo "No pods found in namespace '$namespace' or pods are not scheduled to nodes yet."
+        return 1
+    fi
+    
+    kubectl get nodes $nodes \
+    -o custom-columns=\
+"NODE:.metadata.name,\
+ARCH:.metadata.labels.kubernetes\.io/arch,\
+INSTANCE:.metadata.labels.node\.kubernetes\.io/instance-type,\
+ZONE:.metadata.labels.topology\.kubernetes\.io/zone,\
+CAPACITY:.metadata.labels.karpenter\.sh/capacity-type"
+}

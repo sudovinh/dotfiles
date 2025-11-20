@@ -44,6 +44,7 @@ alias greset-pull="git checkout \$1 && git fetch origin && git reset --hard orig
 alias gitgrep='git grep --color=always $1'
 alias gprcreate='gh pr create'
 alias gprauto='gh pr merge --auto -d -m'
+alias ghardresetmain='git fetch origin && git clean -fd && git reset --hard origin/main'
 
 ## AWS commands
 alias unsetaws='unset AWS_DEFAULT_PROFILE AWS_PROFILE AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN'
@@ -65,7 +66,7 @@ alias klog="kubectl logs"
 alias kexec="kubectl exec -it"
 alias ka="kubectl apply"
 alias kdel="kubectl delete"
-alias kgetns='kubectl get ns -o jsonpath="{.items[*].metadata.name}"'
+alias kgetns='kubectl get ns -o jsonpath="{.items[*].metadata.name}" | tr " " "\n"'
 alias kbuild='kustomize build'
 alias kgetsecretyaml="_getk8secret"
 alias kcreatesecretfile='_createk8secret'
@@ -75,5 +76,4 @@ alias kgetallresources='kubectl api-resources --verbs=list --namespaced -o name 
 alias kgetpodsinnode='kubectl get pods --all-namespaces -o wide | grep $1'
 alias kgetownerref='f(){ kubectl get sts -n "$1" -o json | jq -r ".items[] | [.metadata.name, .metadata.ownerReferences[0].kind, .metadata.ownerReferences[0].name] | @tsv"; unset -f f; }; f'
 alias kgetnodestypes='k get no --sort-by=.metadata.creationTimestamp -L kops.k8s.io/instance-group,topology.kubernetes.io/zone,karpenter.sh/capacity-type'
-
-## Test commands
+alias dockerarchs='f(){ docker manifest inspect "$1" --verbose | jq -r ".[] | .Descriptor.platform | select(.architecture != \"unknown\") | \"\(.architecture)/\(.os)\"" | sort -u; unset -f f; }; f'
