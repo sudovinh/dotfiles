@@ -419,31 +419,31 @@ function k-why-not-deleted() {
 
 kgpodsnodes() {
     local namespace="$1"
-    
+
     if [[ -z "$namespace" ]]; then
         echo "Usage: check_namespace_nodes <namespace>"
         echo "Example: check_namespace_nodes web--jobboard"
         return 1
     fi
-    
+
     echo "=== PODS IN NAMESPACE: $namespace ==="
     kubectl get pods -n "$namespace" -o custom-columns=\
 "POD NAME:.metadata.name,\
 NODE:.spec.nodeName,\
 STATUS:.status.phase,\
 NODE_LABELS:.spec.nodeSelector"
-    
+
     echo ""
     echo "=== NODE ARCHITECTURES ==="
-    
+
     # Get unique nodes that have pods from this namespace
     local nodes=$(kubectl get pods -n "$namespace" -o jsonpath='{.items[*].spec.nodeName}' | tr ' ' '\n' | sort -u | xargs)
-    
+
     if [[ -z "$nodes" ]]; then
         echo "No pods found in namespace '$namespace' or pods are not scheduled to nodes yet."
         return 1
     fi
-    
+
     kubectl get nodes $nodes \
     -o custom-columns=\
 "NODE:.metadata.name,\
@@ -451,4 +451,41 @@ ARCH:.metadata.labels.kubernetes\.io/arch,\
 INSTANCE:.metadata.labels.node\.kubernetes\.io/instance-type,\
 ZONE:.metadata.labels.topology\.kubernetes\.io/zone,\
 CAPACITY:.metadata.labels.karpenter\.sh/capacity-type"
+}
+
+function ecr-login() {
+    # Get the current AWS account ID
+    local account_id
+    account_id=$(aws sts get-caller-identity --query Account --output text 2>/dev/null)
+
+    if [[ -z "$account_id" ]]; then
+        echo "Error: Unable to get AWS account ID. Check your AWS credentials." >&2
+        return 1
+    fi
+
+    # Get the current AWS region
+    local region
+    region=$(aws configure get region 2>/dev/null)
+
+    if [[ -z "$region" ]]; then
+        region="us-east-1"
+        echo "Warning: No region configured, defaulting to us-east-1"
+    fi
+
+    echo "Logging into ECR..."
+    echo "Account ID: $account_id"
+    echo "Region: $region"
+    echo ""
+
+    # Login to ECR
+    aws ecr get-login-password --region "$region" | docker login --username AWS --password-stdin "$account_id.dkr.ecr.$region.amazonaws.com"
+
+    if [[ $? -eq 0 ]]; then
+        echo ""
+        echo "✅ Successfully logged into ECR: $account_id.dkr.ecr.$region.amazonaws.com"
+    else
+        echo ""
+        echo "❌ Failed to log into ECR" >&2
+        return 1
+    fi
 }
