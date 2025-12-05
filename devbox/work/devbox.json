@@ -57,7 +57,9 @@
     "s5cmd":                 "latest",
     "git-sizer":             "latest",
     "python313Packages.pip": "latest",
-    "prometheus":            "latest"
+    "prometheus":            "latest",
+    "git-filter-repo":       "latest",
+    "go":                    "latest"
   },
   "shell": {
     "init_hook": [
