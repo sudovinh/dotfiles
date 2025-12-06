@@ -59,7 +59,8 @@
     "python313Packages.pip": "latest",
     "prometheus":            "latest",
     "git-filter-repo":       "latest",
-    "go":                    "latest"
+    "go":                    "latest",
+    "gcrane":                "latest"
   },
   "shell": {
     "init_hook": [
