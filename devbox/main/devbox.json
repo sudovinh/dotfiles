@@ -1,25 +1,25 @@
 {
   "packages": {
-    "curl": "latest",
-    "wget": "latest",
-    "tree": "latest",
-    "fzf": "latest",
-    "gh": "latest",
-    "nmap": "latest",
-    "htop": "latest",
-    "tmux": "latest",
-    "krew": "latest",
-    "awscli2": "latest",
-    "jq": "latest",
-    "docker-buildx": "latest",
+    "curl":           "latest",
+    "wget":           "latest",
+    "tree":           "latest",
+    "fzf":            "latest",
+    "gh":             "latest",
+    "nmap":           "latest",
+    "htop":           "latest",
+    "tmux":           "latest",
+    "krew":           "latest",
+    "awscli2":        "latest",
+    "jq":             "latest",
+    "docker-buildx":  "latest",
     "docker-compose": "latest",
-    "kind": "latest",
-    "aws-vault": "latest",
-    "doctl": "latest",
-    "opentofu": "1.7.1",
-    "kubectl": "latest",
-    "k3sup": "latest",
-    "yq": "latest",
+    "kind":           "latest",
+    "aws-vault":      "latest",
+    "doctl":          "latest",
+    "opentofu":       "1.7.1",
+    "kubectl":        "latest",
+    "k3sup":          "latest",
+    "yq":             "latest",
     "helm": {
       "version": "latest",
       "excluded_platforms": [
@@ -34,17 +34,18 @@
       ]
     },
     "kubeseal": "latest",
-    "k9s": "latest",
-    "popeye": "latest",
+    "k9s":      "latest",
+    "popeye":   "latest",
     "darwin.apple_sdk.frameworks.SystemConfiguration": {
       "platforms": [
         "x86_64-darwin",
         "aarch64-darwin"
       ]
     },
-    "go": "latest",
-    "python": "latest",
-    "python311Packages.pip": "latest"
+    "go":                    "latest",
+    "python":                "latest",
+    "python311Packages.pip": "latest",
+    "gcrane":                "latest"
   },
   "shell": {
     "init_hook": [
