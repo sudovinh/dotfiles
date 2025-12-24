@@ -45,7 +45,8 @@
     "go":                    "latest",
     "python":                "latest",
     "python311Packages.pip": "latest",
-    "gcrane":                "latest"
+    "gcrane":                "latest",
+    "git":                   "latest"
   },
   "shell": {
     "init_hook": [
