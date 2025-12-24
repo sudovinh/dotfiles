@@ -453,6 +453,45 @@ ZONE:.metadata.labels.topology\.kubernetes\.io/zone,\
 CAPACITY:.metadata.labels.karpenter\.sh/capacity-type"
 }
 
+function awswhoami() {
+    # Get AWS profile
+    local profile="${AWS_PROFILE:-default}"
+
+    # Get AWS region
+    local region
+    region=$(aws configure get region 2>/dev/null)
+
+    # Get caller identity - suppress any browser popup by checking credentials first
+    local account_id user_id arn
+
+    # Try to get identity - if it fails, it means SSO session expired
+    local identity_json
+    identity_json=$(aws sts get-caller-identity --output json 2>&1)
+    local exit_code=$?
+
+    if [[ $exit_code -ne 0 ]]; then
+        echo "Error: Unable to get AWS caller identity." >&2
+        if echo "$identity_json" | grep -q "sso"; then
+            echo "Your AWS SSO session has expired. Run: aws sso login" >&2
+        else
+            echo "Check your AWS credentials." >&2
+        fi
+        return 1
+    fi
+
+    # Parse the JSON output
+    account_id=$(echo "$identity_json" | jq -r '.Account')
+    user_id=$(echo "$identity_json" | jq -r '.UserId')
+    arn=$(echo "$identity_json" | jq -r '.Arn')
+
+    # Display the information cleanly
+    echo "Profile:    $profile"
+    echo "Region:     $region"
+    echo "Account:    $account_id"
+    echo "UserId:     $user_id"
+    echo "Arn:        $arn"
+}
+
 function ecr-login() {
     # Get the current AWS account ID
     local account_id
@@ -488,4 +527,223 @@ function ecr-login() {
         echo "❌ Failed to log into ECR" >&2
         return 1
     fi
+}
+
+# Setup Claude Bedrock - Create AWS Bedrock application inference profile
+# Converts the setup-claude-bedrock.sh script into a function
+function setup-claude-bedrock() {
+  # Default values
+  local REGION="us-west-2"
+  local TAG_KEY="Name"
+  local MODEL_ID=""
+  local PROFILE_NAME=""
+  local TAG_VALUE=""
+
+  # Available Claude models for inference profiles
+  local -a MODEL_NAMES=(
+    "Claude Opus 4.5"
+    "Claude Sonnet 4.5"
+    "Claude Sonnet 4"
+    "Claude Haiku 3.5"
+  )
+  local -a MODEL_IDS=(
+    "us.anthropic.claude-opus-4-5-20251101-v1:0"
+    "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+    "us.anthropic.claude-sonnet-4-20250514-v1:0"
+    "us.anthropic.claude-3-5-haiku-20241022-v1:0"
+  )
+
+  # Parse command line arguments
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -n|--name)
+        PROFILE_NAME="$2"
+        shift 2
+        ;;
+      -r|--region)
+        REGION="$2"
+        shift 2
+        ;;
+      -k|--tag-key)
+        TAG_KEY="$2"
+        shift 2
+        ;;
+      -v|--tag-value)
+        TAG_VALUE="$2"
+        shift 2
+        ;;
+      -m|--model)
+        MODEL_ID="$2"
+        shift 2
+        ;;
+      -h|--help)
+        echo "Usage: setup-claude-bedrock [OPTIONS]"
+        echo ""
+        echo "Options:"
+        echo "  -n, --name NAME           Name for the inference profile (required)"
+        echo "  -r, --region REGION       AWS region (default: us-west-2)"
+        echo "  -k, --tag-key KEY         Tag key for cost allocation (default: Name)"
+        echo "  -v, --tag-value VALUE     Tag value for cost allocation (default: same as profile name)"
+        echo "  -m, --model MODEL         System inference profile ID (interactive selection if not provided)"
+        echo "  -h, --help                Show this help message"
+        echo ""
+        echo "Available models:"
+        for i in {1..${#MODEL_NAMES[@]}}; do
+          echo "  $i) ${MODEL_NAMES[$i]}: ${MODEL_IDS[$i]}"
+        done
+        echo ""
+        echo "Example:"
+        echo "  setup-claude-bedrock --name \"JohnDoeProfile\""
+        echo "  setup-claude-bedrock --name \"TeamAlpha\" --tag-key \"Team\" --tag-value \"alpha\""
+        return 0
+        ;;
+      *)
+        echo "Unknown option: $1"
+        echo "Use -h or --help for usage information"
+        return 1
+        ;;
+    esac
+  done
+
+  # Validate required arguments
+  if [ -z "$PROFILE_NAME" ]; then
+    echo "Error: Profile name is required. Use -n or --name to specify."
+    return 1
+  fi
+
+  # If no model specified, prompt for selection
+  if [ -z "$MODEL_ID" ]; then
+    echo "Select a Claude model for the inference profile:"
+    echo ""
+    for i in {1..${#MODEL_NAMES[@]}}; do
+      echo "  $i) ${MODEL_NAMES[$i]}"
+    done
+    echo ""
+    echo -n "Enter selection (1-${#MODEL_NAMES[@]}): "
+    read selection
+
+    if [[ ! "$selection" =~ ^[0-9]+$ ]] || [ "$selection" -lt 1 ] || [ "$selection" -gt "${#MODEL_NAMES[@]}" ]; then
+      echo "Invalid selection."
+      return 1
+    fi
+
+    MODEL_ID="${MODEL_IDS[$selection]}"
+    echo ""
+    echo "Selected: ${MODEL_NAMES[$selection]}"
+  fi
+
+  # Set TAG_VALUE to PROFILE_NAME if not specified
+  if [ -z "$TAG_VALUE" ]; then
+    TAG_VALUE="$PROFILE_NAME"
+  fi
+
+  echo "=========================================="
+  echo "Claude Code Bedrock Setup"
+  echo "=========================================="
+  echo "Profile Name: $PROFILE_NAME"
+  echo "Region: $REGION"
+  echo "Model: $MODEL_ID"
+  echo "Tag: $TAG_KEY=$TAG_VALUE"
+  echo "=========================================="
+  echo ""
+
+  # Step 1: Get the system inference profile ARN
+  echo "Step 1: Retrieving system inference profile ARN..."
+  local SYS_ARN
+  SYS_ARN=$(aws bedrock get-inference-profile \
+    --region "$REGION" \
+    --inference-profile-identifier "$MODEL_ID" \
+    --query "inferenceProfileArn" \
+    --output text)
+
+  if [ -z "$SYS_ARN" ]; then
+    echo "Error: Failed to retrieve system inference profile ARN"
+    return 1
+  fi
+
+  echo "System inference profile ARN: $SYS_ARN"
+  echo ""
+
+  # Step 2: Create the application inference profile
+  echo "Step 2: Creating application inference profile..."
+  local CREATE_RESPONSE
+  CREATE_RESPONSE=$(aws bedrock create-inference-profile \
+    --inference-profile-name "$PROFILE_NAME" \
+    --model-source "copyFrom=$SYS_ARN" \
+    --region "$REGION" \
+    --tags "key=$TAG_KEY,value=$TAG_VALUE" \
+    --output json)
+
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to create application inference profile"
+    return 1
+  fi
+
+  echo "Application inference profile created successfully!"
+  echo ""
+
+  # Step 3: Wait a moment for profile to be fully active
+  echo "Step 3: Waiting for profile to become active..."
+  sleep 2
+
+  # Step 4: Retrieve the application inference profile ARN
+  echo "Step 4: Retrieving application inference profile details..."
+  local APP_PROFILE_INFO
+  APP_PROFILE_INFO=$(aws bedrock list-inference-profiles \
+    --region "$REGION" \
+    --type-equals APPLICATION \
+    --query "inferenceProfileSummaries[?inferenceProfileName=='$PROFILE_NAME'].[inferenceProfileName, inferenceProfileArn, inferenceProfileId]" \
+    --output text)
+
+  if [ -z "$APP_PROFILE_INFO" ]; then
+    echo "Error: Failed to retrieve application inference profile details"
+    return 1
+  fi
+
+  # Parse the output
+  local APP_PROFILE_ARN=$(echo "$APP_PROFILE_INFO" | awk '{print $2}')
+  local APP_PROFILE_ID=$(echo "$APP_PROFILE_INFO" | awk '{print $3}')
+
+  echo "Profile Name: $(echo "$APP_PROFILE_INFO" | awk '{print $1}')"
+  echo "Profile ARN: $APP_PROFILE_ARN"
+  echo "Profile ID: $APP_PROFILE_ID"
+  echo ""
+
+  # Step 5: Generate environment variable setup
+  echo "=========================================="
+  echo "Setup Complete!"
+  echo "=========================================="
+  echo ""
+  echo "Add these environment variables to your shell configuration:"
+  echo ""
+  echo "export CLAUDE_CODE_USE_BEDROCK=1"
+  echo "export AWS_REGION=\"$REGION\""
+  echo "export ANTHROPIC_MODEL=\"$APP_PROFILE_ID\""
+  echo ""
+  echo "Or run these commands now:"
+  echo ""
+  echo "  export CLAUDE_CODE_USE_BEDROCK=1"
+  echo "  export AWS_REGION=\"$REGION\""
+  echo "  export ANTHROPIC_MODEL=\"$APP_PROFILE_ARN\""
+  echo ""
+  echo "To make these permanent, add them to your ~/.bashrc or ~/.zshrc:"
+  echo ""
+  echo "  echo 'export CLAUDE_CODE_USE_BEDROCK=1' >> ~/.zshrc"
+  echo "  echo 'export AWS_REGION=\"$REGION\"' >> ~/.zshrc"
+  echo "  echo 'export ANTHROPIC_MODEL=\"$APP_PROFILE_ARN\"' >> ~/.zshrc"
+  echo "  source ~/.zshrc"
+  echo ""
+  echo "=========================================="
+  echo "Verification"
+  echo "=========================================="
+  echo ""
+  echo "To verify your setup, run:"
+  echo ""
+  echo "  aws bedrock get-inference-profile \\"
+  echo "    --region \"$REGION\" \\"
+  echo "    --inference-profile-identifier \"$APP_PROFILE_ARN\""
+  echo ""
+  echo "Then test Claude Code with:"
+  echo "  claude \"Hello, test message\""
+  echo ""
 }
