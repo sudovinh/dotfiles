@@ -77,3 +77,9 @@ alias kgetpodsinnode='kubectl get pods --all-namespaces -o wide | grep $1'
 alias kgetownerref='f(){ kubectl get sts -n "$1" -o json | jq -r ".items[] | [.metadata.name, .metadata.ownerReferences[0].kind, .metadata.ownerReferences[0].name] | @tsv"; unset -f f; }; f'
 alias kgetnodestypes='k get no --sort-by=.metadata.creationTimestamp -L kops.k8s.io/instance-group,topology.kubernetes.io/zone,karpenter.sh/capacity-type'
 alias dockerarchs='f(){ docker manifest inspect "$1" --verbose | jq -r ".[] | .Descriptor.platform | select(.architecture != \"unknown\") | \"\(.architecture)/\(.os)\"" | sort -u; unset -f f; }; f'
+
+## Shell profiling
+alias zsh-time='time zsh -i -c exit'
+
+## IDE: use switch-ide to change, which-ide to check current
+# The 'code' function is defined in .zsh_functions
