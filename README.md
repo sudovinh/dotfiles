@@ -42,6 +42,9 @@ OBSIDIAN_NOTES_REPO=git@github.com:your-username/second-brain.git
 | `make update-repos` | Pull dev_setup and notes repositories |
 | `make update-oh-my-zsh-plugins` | Update all oh-my-zsh plugins |
 | `make setup-claude-config` | Symlink Claude Code settings |
+| `make setup-macos-defaults` | Apply macOS system preferences (Finder, Dock, keyboard) |
+| `make setup-zed-config` | Setup Zed IDE configuration directory |
+| `make select-ide` | Choose default IDE (VS Code, Cursor, Zed, Sublime) |
 | `make refresh-devbox-config` | Force regenerate devbox lock and reinstall |
 | `make print-variables` | Show current configuration |
 | `make help` | Display available targets |
@@ -66,6 +69,8 @@ dotfiles/
 │   ├── dot_zshrc.tmpl    # Zsh configuration
 │   ├── dot_gitconfig.tmpl
 │   └── ...
+├── macos/                # macOS-specific scripts
+│   └── defaults.sh       # System preferences script
 ├── zsh-helper/           # Shell utilities
 │   ├── .zsh_aliases
 │   ├── .zsh_functions
@@ -98,6 +103,63 @@ Profiles affect:
 - **Chezmoi Integration**: Template-based dotfile management
 - **Devbox**: Nix-based reproducible dev environments
 - **Claude Code**: Managed settings with `includeCoAuthoredBy: false`
+- **IDE Switcher**: Switch between VS Code, Cursor, Zed with one command
+- **macOS Defaults**: Sensible system preferences (configurable via .env)
+
+## macOS Defaults
+
+The `macos/defaults.sh` script configures sensible system preferences:
+
+- **Finder**: Show hidden files, path bar, status bar, disable .DS_Store on network drives
+- **Dock**: Auto-hide, fast animations, no recent apps
+- **Keyboard**: Fast key repeat, disable press-and-hold, full keyboard access
+- **Screenshots**: Save to ~/Screenshots as PNG, no shadow
+- **Safari**: Show full URL, enable Developer menu
+- **General**: Expand save/print dialogs, disable auto-correct
+
+Run with: `make setup-macos-defaults`
+
+**Override any setting** via `.env`:
+```bash
+MACOS_DOCK_AUTOHIDE=false
+MACOS_DOCK_ICON_SIZE=64
+MACOS_KEYBOARD_REPEAT_RATE=1
+```
+
+> Note: Some changes require logout/restart to take effect.
+
+## IDE Switcher
+
+Switch between IDEs with a single `code` command:
+
+```bash
+# Interactive selection with fzf
+switch-ide
+
+# Direct switch
+switch-ide cursor
+switch-ide zed
+switch-ide vscode
+
+# Check current IDE
+which-ide
+
+# Open files with current IDE
+code .
+code myfile.txt
+```
+
+Supports: VS Code, Cursor, Zed, Sublime Text, WebStorm, IntelliJ
+
+## Zed IDE Configuration
+
+Zed settings are managed by chezmoi with profile-specific templating:
+
+- Located at: `dot/private_dot_config/private_zed/settings.json.tmpl`
+- Deployed to: `~/.config/zed/settings.json`
+- Profile differences (e.g., theme) use chezmoi templating based on hostname
+
+Apply with: `chezmoi apply` or `make update`
 
 ## Tool Stack
 
