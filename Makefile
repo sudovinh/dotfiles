@@ -398,6 +398,41 @@ setup-claude-config:
 	@# Note: settings.local.json is symlinked by .zshrc based on hostname (work/main)
 	@echo "Claude config setup complete."
 
+.PHONY: setup-macos-defaults
+setup-macos-defaults:
+	@echo "Applying macOS defaults..."
+	@if [ "$(UNAME_S)" = "Darwin" ]; then \
+		chmod +x $(DOTFILES_DIR)/macos/defaults.sh && \
+		$(DOTFILES_DIR)/macos/defaults.sh; \
+	else \
+		echo "Skipping macOS defaults (not on macOS)"; \
+	fi
+
+.PHONY: select-ide
+select-ide:
+	@echo "Select your preferred IDE:"
+	@echo "  1) VS Code"
+	@echo "  2) Cursor"
+	@echo "  3) Zed"
+	@echo "  4) Sublime Text"
+	@read -p "Enter choice [1-4]: " choice; \
+	mkdir -p $(HOME)/.config/dotfiles; \
+	case $$choice in \
+		1) echo "vscode" > $(HOME)/.config/dotfiles/ide ;; \
+		2) echo "cursor" > $(HOME)/.config/dotfiles/ide ;; \
+		3) echo "zed" > $(HOME)/.config/dotfiles/ide ;; \
+		4) echo "sublime" > $(HOME)/.config/dotfiles/ide ;; \
+		*) echo "Invalid choice" ;; \
+	esac
+	@echo "IDE preference saved. Open new terminal to apply."
+
+.PHONY: setup-zed-config
+setup-zed-config:
+	@echo "Setting up Zed IDE configuration..."
+	@mkdir -p $(HOME)/.config/zed
+	@# Profile-specific settings are symlinked by .zshrc based on hostname
+	@echo "Zed config directory created. Settings will be symlinked on shell startup."
+
 # for sensitive zsh aliases, functions, etc.
 .PHONY: clone-dev-setup
 clone-dev-setup:
@@ -479,6 +514,9 @@ help:
 	@echo "  update-repos        Pull dev_setup and notes repositories"
 	@echo "  update-oh-my-zsh-plugins  Update all oh-my-zsh plugins"
 	@echo "  setup-claude-config Symlink Claude Code settings"
+	@echo "  setup-macos-defaults      Apply macOS system preferences (Finder, Dock, keyboard)"
+	@echo "  setup-zed-config    Setup Zed IDE configuration directory"
+	@echo "  select-ide          Choose default IDE (VS Code, Cursor, Zed, Sublime)"
 	@echo "  refresh-devbox-config     Force regenerate devbox lock and reinstall"
 	@echo "  configure           Other setup steps (tbd)"
 	@echo "  print-variables     Print Makefile variables"

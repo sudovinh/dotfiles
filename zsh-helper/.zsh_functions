@@ -7,8 +7,128 @@ function updatezsh() {
   refresh-global
 }
 
+###############################################################################
+# IDE Switcher
+# Usage:
+#   switch-ide           # Interactive selection with fzf
+#   switch-ide vscode    # Direct switch to VS Code
+#   switch-ide cursor    # Direct switch to Cursor
+#   switch-ide zed       # Direct switch to Zed
+###############################################################################
+
+# Default IDE (can be overridden in ~/.extra)
+export DEFAULT_IDE="${DEFAULT_IDE:-vscode}"
+
+# IDE configuration file
+IDE_CONFIG_FILE="$HOME/.config/dotfiles/ide"
+
+# Available IDEs and their commands
+typeset -A IDE_COMMANDS
+IDE_COMMANDS=(
+    ["vscode"]="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
+    ["cursor"]="/Applications/Cursor.app/Contents/Resources/app/bin/cursor"
+    ["zed"]="/Applications/Zed.app/Contents/MacOS/cli"
+    ["sublime"]="/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl"
+    ["webstorm"]="/Applications/WebStorm.app/Contents/MacOS/webstorm"
+    ["intellij"]="/Applications/IntelliJ IDEA.app/Contents/MacOS/idea"
+)
+
+# Get current IDE from config file
+function _get_current_ide() {
+    if [ -f "$IDE_CONFIG_FILE" ]; then
+        cat "$IDE_CONFIG_FILE"
+    else
+        echo "$DEFAULT_IDE"
+    fi
+}
+
+# Set current IDE
+function _set_current_ide() {
+    local ide="$1"
+    mkdir -p "$(dirname "$IDE_CONFIG_FILE")"
+    echo "$ide" > "$IDE_CONFIG_FILE"
+}
+
+# Switch IDE function
+function switch-ide() {
+    local selected_ide="$1"
+
+    # Get list of installed IDEs
+    local installed_ides=()
+    for ide in ${(k)IDE_COMMANDS}; do
+        local cmd="${IDE_COMMANDS[$ide]}"
+        # Check if IDE is installed
+        if [[ -x "$cmd" ]] || [[ -d "${cmd%/Contents/*}.app" ]]; then
+            installed_ides+=("$ide")
+        fi
+    done
+
+    if [ ${#installed_ides[@]} -eq 0 ]; then
+        echo "No supported IDEs found installed."
+        return 1
+    fi
+
+    # If no argument provided, use fzf for selection
+    if [ -z "$selected_ide" ]; then
+        if ! command -v fzf &>/dev/null; then
+            echo "fzf not found. Specify IDE directly: switch-ide [vscode|cursor|zed|sublime]"
+            echo "Installed IDEs: ${installed_ides[*]}"
+            return 1
+        fi
+
+        local current=$(_get_current_ide)
+        selected_ide=$(printf '%s\n' "${installed_ides[@]}" | fzf --prompt="Select IDE (current: $current): " --height=10)
+
+        if [ -z "$selected_ide" ]; then
+            echo "No IDE selected."
+            return 1
+        fi
+    fi
+
+    # Validate selection
+    local found=0
+    for ide in "${installed_ides[@]}"; do
+        if [[ "$ide" == "$selected_ide" ]]; then
+            found=1
+            break
+        fi
+    done
+
+    if [ $found -eq 0 ]; then
+        echo "IDE '$selected_ide' not found or not installed."
+        echo "Available: ${installed_ides[*]}"
+        return 1
+    fi
+
+    _set_current_ide "$selected_ide"
+    echo "Switched to $selected_ide. Run 'source ~/.zshrc' or open new terminal."
+}
+
+# The 'code' function that uses the current IDE
 function code() {
-  VSCODE_CWD="$PWD" open -n -b "com.microsoft.VSCode" --args $* ;
+    local current_ide=$(_get_current_ide)
+    local cmd="${IDE_COMMANDS[$current_ide]}"
+
+    if [ -z "$cmd" ]; then
+        echo "Unknown IDE: $current_ide. Run 'switch-ide' to configure."
+        return 1
+    fi
+
+    # Check if command exists
+    if [[ -x "$cmd" ]]; then
+        "$cmd" "$@"
+    else
+        echo "IDE command not found: $cmd"
+        echo "Run 'switch-ide' to select a different IDE."
+        return 1
+    fi
+}
+
+# Show current IDE
+function which-ide() {
+    local current=$(_get_current_ide)
+    echo "Current IDE: $current"
+    echo "Command: ${IDE_COMMANDS[$current]}"
 }
 
 function _getk8secret(){
