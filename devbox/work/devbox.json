@@ -1,17 +1,5 @@
 {
   "packages": {
-    "darwin.apple_sdk.frameworks.CoreServices": {
-      "platforms": [
-        "aarch64-darwin",
-        "x86_64-darwin"
-      ]
-    },
-    "darwin.apple_sdk.frameworks.SystemConfiguration": {
-      "platforms": [
-        "x86_64-darwin",
-        "aarch64-darwin"
-      ]
-    },
     "vulnix":     "latest",
     "ripgrep":    "latest",
     "shellcheck": "latest",

@@ -36,12 +36,6 @@
     "kubeseal": "latest",
     "k9s":      "latest",
     "popeye":   "latest",
-    "darwin.apple_sdk.frameworks.SystemConfiguration": {
-      "platforms": [
-        "x86_64-darwin",
-        "aarch64-darwin"
-      ]
-    },
     "go":                    "latest",
     "python":                "latest",
     "python311Packages.pip": "latest",
