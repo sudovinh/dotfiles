@@ -1,0 +1,28 @@
+{
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false
+  },
+  "terminal": {
+    "font_family": "Meslo LG L DZ For Powerline"
+  },
+  "base_keymap": "VSCode",
+  "minimap": {
+    "show": "never"
+  },
+  "show_whitespaces": "all",
+  "show_edit_predictions": true,
+  "tab_size": 2,
+  "icon_theme": "Zed (Default)",
+  "ui_font_size": 16,
+  "buffer_font_size": 15,
+  "theme": {
+    "mode": "dark",
+    "light": "One Light",
+{{- if eq .chezmoi.hostname "vinh-zip" }}
+    "dark": "Gruvbox Dark Hard"
+{{- else }}
+    "dark": "Tokyo Night"
+{{- end }}
+  }
+}

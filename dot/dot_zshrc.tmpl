@@ -140,3 +140,7 @@ fi
 
 # Add local bin to PATH
 export PATH="$HOME/.local/bin:$PATH"
+
+# Local overrides (not tracked in git)
+# Use ~/.extra for machine-specific settings, API keys, etc.
+[ -f ~/.extra ] && source ~/.extra
