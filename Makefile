@@ -1,5 +1,24 @@
 SHELL := /bin/bash
-DEV_SETUP_REPO := git@github.com:sudovinh/dev_setup.git
+
+# ============================================
+# LOAD .env FILE (if exists)
+# ============================================
+-include .env
+export
+
+# ============================================
+# CONFIGURABLE VARIABLES (override in .env)
+# ============================================
+# Required
+GIT_USER ?=
+
+# Optional - leave empty to skip
+DEV_SETUP_REPO ?=
+OBSIDIAN_NOTES_REPO ?=
+
+# ============================================
+# FIXED VARIABLES (do not change)
+# ============================================
 DOTFILES_DIR := $(HOME)/dotfiles
 BREW_DIR := $(DOTFILES_DIR)/brew
 BREWFILE_DEFAULT := $(BREW_DIR)/default
@@ -11,15 +30,138 @@ DEVBOX_INSTALL_SCRIPT := https://get.jetify.com/devbox
 DIRENV_INSTALL_SCRIPT := https://direnv.net/install.sh
 DEVBOX_GLOBAL_CONFIG := $(HOME)/.local/share/devbox/global/default
 DOTFILE_SCRIPTS := $(DOTFILES_DIR)/scripts
-GIT_USER := sudovinh
 HOMEBREW_URL := https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
-OBSIDIAN_NOTES_REPO := git@github.com:sudovinh/second-brain.git
+CLAUDE_CONFIG_DIR := $(HOME)/.claude
+CLAUDE_SETTINGS := $(DOTFILES_DIR)/claude/settings.json
 OH_MY_ZSH_INSTALL_SCRIPT := https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
 UNAME_S := $(shell uname -s)
 ZSH_PLUGIN_URLS := \
 	"https://github.com/zsh-users/zsh-autosuggestions.git" \
 	"https://github.com/zsh-users/zsh-syntax-highlighting.git"
 PROFILE_CHOICE :=
+
+# ============================================
+# UPDATE TARGETS
+# ============================================
+
+.PHONY: update
+update: print-variables
+ifeq ($(UNAME_S), Darwin)
+	@echo "Detected macOS, running update..."
+	$(MAKE) mac-update
+else ifeq ($(UNAME_S), Linux)
+	@echo "Detected Linux, running update..."
+	$(MAKE) linux-update
+else
+	@echo "Unsupported OS"
+endif
+
+.PHONY: mac-update
+mac-update: select-profile update-chezmoi update-repos update-oh-my-zsh-plugins brew-bundle-default setup-brewfile setup-claude-config refresh-devbox-config clean-profile
+	@echo "macOS update complete."
+
+.PHONY: linux-update
+linux-update: select-profile update-chezmoi update-repos update-oh-my-zsh-plugins setup-claude-config refresh-devbox-config clean-profile
+	@echo "Linux update complete."
+
+.PHONY: update-chezmoi
+update-chezmoi:
+	@echo "Updating chezmoi..."
+	@if [ -d "$(CHEZMOI_DIR)" ]; then \
+		echo "Pulling latest changes and applying..." && \
+		chezmoi update --apply; \
+	else \
+		echo "Chezmoi not initialized. Run 'make initialize' first." && \
+		exit 1; \
+	fi
+	@# Re-link profile-specific toml config
+	@bash -c 'if [ -f .profile-choice ]; then \
+		PROFILE_CHOICE=$$(cat .profile-choice); \
+		if [ "$$PROFILE_CHOICE" = "main" ]; then \
+			CHEZMOI_TOML="$(CONFIGS_DIR)/chezmoi/main.toml"; \
+		elif [ "$$PROFILE_CHOICE" = "work" ]; then \
+			CHEZMOI_TOML="$(CONFIGS_DIR)/chezmoi/work.toml"; \
+		else \
+			CHEZMOI_TOML=""; \
+		fi; \
+		if [ -n "$$CHEZMOI_TOML" ] && [ -f "$$CHEZMOI_TOML" ]; then \
+			mkdir -p "$(CHEZMOI_CONFIG_DIR)" && \
+			ln -sf "$$CHEZMOI_TOML" "$(CHEZMOI_CONFIG_DIR)/chezmoi.toml"; \
+		fi; \
+	fi'
+	@echo "Chezmoi update complete."
+
+.PHONY: update-repos
+update-repos:
+	@echo "Updating cloned repositories..."
+ifneq ($(DEV_SETUP_REPO),)
+	@# Update dev_setup
+	@REPO_NAME=$$(basename $(DEV_SETUP_REPO) .git); \
+	if [ -d $(HOME)/$$REPO_NAME ]; then \
+		echo "Pulling latest dev_setup changes..." && \
+		cd $(HOME)/$$REPO_NAME && git pull --rebase; \
+	else \
+		echo "dev_setup not found, skipping."; \
+	fi
+endif
+ifneq ($(OBSIDIAN_NOTES_REPO),)
+	@# Update notes
+	@REPO_NAME=$$(basename $(OBSIDIAN_NOTES_REPO) .git); \
+	if [ -d $(HOME)/$$REPO_NAME ]; then \
+		echo "Pulling latest notes..." && \
+		cd $(HOME)/$$REPO_NAME && git pull --rebase; \
+	else \
+		echo "Notes repo not found, skipping."; \
+	fi
+endif
+	@echo "Repositories update complete."
+
+.PHONY: update-oh-my-zsh-plugins
+update-oh-my-zsh-plugins:
+	@echo "Updating Oh My Zsh plugins..."
+	@for url in $(ZSH_PLUGIN_URLS); do \
+		plugin_name=$$(basename $$url .git); \
+		plugin_dir=$${ZSH_CUSTOM:-$(HOME)/.oh-my-zsh/custom}/plugins/$$plugin_name; \
+		if [ -d "$$plugin_dir" ]; then \
+			echo "Updating $$plugin_name..." && \
+			cd "$$plugin_dir" && git pull --rebase; \
+		else \
+			echo "Installing $$plugin_name..." && \
+			git clone $$url "$$plugin_dir"; \
+		fi; \
+	done
+	@echo "Oh My Zsh plugins update complete."
+
+.PHONY: refresh-devbox-config
+refresh-devbox-config:
+	@if [ -f .profile-choice ]; then \
+		PROFILE_CHOICE=$$(cat .profile-choice); \
+		if [ "$$PROFILE_CHOICE" = "main" ]; then \
+			DEVBOX_PROFILE=$(DEVBOX_CONFIG_DIR)/main; \
+		elif [ "$$PROFILE_CHOICE" = "work" ]; then \
+			DEVBOX_PROFILE=$(DEVBOX_CONFIG_DIR)/work; \
+		else \
+			DEVBOX_PROFILE=""; \
+		fi; \
+		if [ -n "$$DEVBOX_PROFILE" ] && [ -d "$$DEVBOX_PROFILE" ]; then \
+			echo "Force refreshing Devbox config from $$DEVBOX_PROFILE..."; \
+			mkdir -p $(DEVBOX_GLOBAL_CONFIG); \
+			rm -f $(DEVBOX_GLOBAL_CONFIG)/devbox.json $(DEVBOX_GLOBAL_CONFIG)/devbox.lock; \
+			ln -sf $$DEVBOX_PROFILE/devbox.json $(DEVBOX_GLOBAL_CONFIG)/devbox.json; \
+			echo "Regenerating devbox.lock (this may take a moment)..."; \
+			cd $(DEVBOX_GLOBAL_CONFIG) && devbox install --refresh 2>/dev/null || devbox install; \
+			eval "$$(devbox global shellenv --preserve-path-stack -r)" && hash -r 2>/dev/null || true; \
+			echo "Devbox config refreshed."; \
+		else \
+			echo "Skipping Devbox refresh. Invalid or missing directory."; \
+		fi; \
+	else \
+		echo "No profile selected. Skipping Devbox config."; \
+	fi
+
+# ============================================
+# CLEAN TARGETS
+# ============================================
 
 clean: clean-profile
 
@@ -36,20 +178,17 @@ clean-profile:
 
 .PHONY: print-variables
 print-variables:
+	@echo "=== Configurable (.env) ==="
+	@echo "GIT_USER: $(GIT_USER)"
+	@echo "DEV_SETUP_REPO: $(DEV_SETUP_REPO)"
+	@echo "OBSIDIAN_NOTES_REPO: $(OBSIDIAN_NOTES_REPO)"
+	@echo ""
+	@echo "=== System ==="
 	@echo "SHELL: $(SHELL)"
 	@echo "UNAME_S: $(UNAME_S)"
-	@echo "HOMEBREW_URL: $(HOMEBREW_URL)"
 	@echo "DOTFILES_DIR: $(DOTFILES_DIR)"
-	@echo "DOTFILE_SCRIPTS: $(DOTFILE_SCRIPTS)"
-	@echo "BREW_DIR: $(BREW_DIR)"
-	@echo "BREWFILE_DEFAULT: $(BREWFILE_DEFAULT)"
-	@echo "CONFIGS_DIR: $(CONFIGS_DIR)"
-	@echo "DEVBOX_CONFIG_DIR: $(DEVBOX_CONFIG_DIR)"
-	@echo "DEVBOX_INSTALL_SCRIPT: $(DEVBOX_INSTALL_SCRIPT)"
+	@echo "CHEZMOI_DIR: $(CHEZMOI_DIR)"
 	@echo "DEVBOX_GLOBAL_CONFIG: $(DEVBOX_GLOBAL_CONFIG)"
-	@echo "DIRENV_INSTALL_SCRIPT: $(DIRENV_INSTALL_SCRIPT)"
-	@echo "OH_MY_ZSH_INSTALL_SCRIPT: $(OH_MY_ZSH_INSTALL_SCRIPT)"
-	@echo "ZSH_PLUGIN_URLS: $(ZSH_PLUGIN_URLS)"
 	@echo "PROFILE_CHOICE: $(PROFILE_CHOICE)"
 
 .PHONY: initialize
@@ -65,14 +204,14 @@ else
 endif
 
 .PHONY: mac-init
-mac-init: select-profile install-powerline-fonts install-xcode install-homebrew setup-iterm2-shell-integration setup-chezmoi install-devbox install-direnv brew-bundle-default clone-dev-setup setup-shell setup-brewfile setup-devbox-config setup-notes clean-profile
+mac-init: select-profile install-powerline-fonts install-xcode install-homebrew setup-iterm2-shell-integration setup-chezmoi install-devbox install-direnv brew-bundle-default clone-dev-setup setup-claude-config setup-shell setup-brewfile setup-devbox-config setup-notes clean-profile
 
 .PHONY: linux-init
-linux-init: select-profile install-powerline-fonts install-devbox install-direnv clone-dev-setup setup-shell setup-devbox-config setup-chezmoi setup-notes clean-profile
+linux-init: select-profile install-powerline-fonts install-devbox install-direnv clone-dev-setup setup-claude-config setup-shell setup-devbox-config setup-chezmoi setup-notes clean-profile
 	@echo "Setting up for Linux..."
 	# Add additional Linux setup steps here, such as package manager commands.
 
-.PHONE: configure
+.PHONY: configure
 configure: select-profile
 	@echo "tbd..."
 
@@ -135,6 +274,10 @@ setup-iterm2-shell-integration:
 
 .PHONY: setup-chezmoi
 setup-chezmoi:
+ifeq ($(GIT_USER),)
+	@echo "Error: GIT_USER not set. Please set it in .env file."
+	@exit 1
+else
 	@echo "Configuring chezmoi..."
 	@if [ ! -d "$(CHEZMOI_DIR)" ]; then \
 		echo "Initializing chezmoi for the first time..." && \
@@ -143,6 +286,7 @@ setup-chezmoi:
 		echo "Chezmoi already initialized. Pulling updates from the repository..." && \
 		chezmoi git pull; \
 	fi
+endif
 	@echo "Copying chezmoi toml config..."
 	@bash -c 'if [ -f .profile-choice ]; then \
 		PROFILE_CHOICE=$$(cat .profile-choice); \
@@ -240,9 +384,26 @@ setup-devbox-config:
 		echo "No profile selected. Skipping Devbox config setup."; \
 	fi
 
+.PHONY: setup-claude-config
+setup-claude-config:
+	@echo "Setting up Claude Code configuration..."
+	@mkdir -p $(CLAUDE_CONFIG_DIR)
+	@# Symlink global settings from dotfiles
+	@if [ -f "$(CLAUDE_SETTINGS)" ]; then \
+		echo "Linking Claude settings.json from dotfiles..."; \
+		ln -sf "$(CLAUDE_SETTINGS)" "$(CLAUDE_CONFIG_DIR)/settings.json"; \
+	else \
+		echo "Warning: $(CLAUDE_SETTINGS) not found. Skipping global settings."; \
+	fi
+	@# Note: settings.local.json is symlinked by .zshrc based on hostname (work/main)
+	@echo "Claude config setup complete."
+
 # for sensitive zsh aliases, functions, etc.
-.PHONE: clone-dev-setup
+.PHONY: clone-dev-setup
 clone-dev-setup:
+ifeq ($(DEV_SETUP_REPO),)
+	@echo "DEV_SETUP_REPO not set in .env, skipping dev_setup clone."
+else
 	@echo "Cloning dev_setup repository..."
 	@REPO_NAME=$$(basename $(DEV_SETUP_REPO) .git); \
 	if [ ! -d $(HOME)/$$REPO_NAME ]; then \
@@ -252,6 +413,7 @@ clone-dev-setup:
 	else \
 		echo "dev_setup repository already cloned."; \
 	fi
+endif
 
 .PHONY: setup-shell
 setup-shell: setup-zsh
@@ -290,8 +452,11 @@ install-oh-my-zsh-plugins:
 	done
 	@echo "Oh My Zsh plugins installation complete."
 
-.PHONE: setup-notes
+.PHONY: setup-notes
 setup-notes:
+ifeq ($(OBSIDIAN_NOTES_REPO),)
+	@echo "OBSIDIAN_NOTES_REPO not set in .env, skipping notes clone."
+else
 	@echo "Setting up Obsidian notes..."
 	@REPO_NAME=$$(basename $(OBSIDIAN_NOTES_REPO) .git); \
 	if [ ! -d $(HOME)/$$REPO_NAME ]; then \
@@ -301,14 +466,21 @@ setup-notes:
 	else \
 		echo "Obsidian notes repository already cloned."; \
 	fi
+endif
 
 .PHONY: help
 help:
 	@echo "Makefile for dotfiles setup"
 	@echo ""
 	@echo "Targets:"
-	@echo "  initialize: Run pre-setup checks and install necessary tools"
-	@echo "  configure: other setup steps tbd"
-	@echo "  print-variables: Print Makefile variables"
-	@echo "  clean: Clean up temporary files"
-	@echo "  help: Display this help message"
+	@echo "  initialize          First-time setup - installs all tools and configures environment"
+	@echo "  update              Safe update - pulls latest changes and applies idempotently"
+	@echo "  update-chezmoi      Pull and apply chezmoi changes only"
+	@echo "  update-repos        Pull dev_setup and notes repositories"
+	@echo "  update-oh-my-zsh-plugins  Update all oh-my-zsh plugins"
+	@echo "  setup-claude-config Symlink Claude Code settings"
+	@echo "  refresh-devbox-config     Force regenerate devbox lock and reinstall"
+	@echo "  configure           Other setup steps (tbd)"
+	@echo "  print-variables     Print Makefile variables"
+	@echo "  clean               Clean up temporary files"
+	@echo "  help                Display this help message"
