@@ -21,6 +21,18 @@ export DEFAULT_IDE="${DEFAULT_IDE:-vscode}"
 
 # IDE configuration file
 IDE_CONFIG_FILE="$HOME/.config/dotfiles/ide"
+KUBE_EDITOR_FILE="$HOME/.config/dotfiles/kube_editor"
+GIT_EDITOR_FILE="$HOME/.config/dotfiles/git_editor"
+
+# Export KUBE_EDITOR from config file if it exists
+if [ -f "$KUBE_EDITOR_FILE" ]; then
+    export KUBE_EDITOR="$(cat "$KUBE_EDITOR_FILE")"
+fi
+
+# Export GIT_EDITOR from config file if it exists (overrides direnv/other settings)
+if [ -f "$GIT_EDITOR_FILE" ]; then
+    export GIT_EDITOR="$(cat "$GIT_EDITOR_FILE")"
+fi
 
 # Available IDEs and their commands
 typeset -A IDE_COMMANDS
@@ -33,6 +45,17 @@ IDE_COMMANDS=(
     ["intellij"]="/Applications/IntelliJ IDEA.app/Contents/MacOS/idea"
 )
 
+# Editor commands for git and kubectl (with --wait flags for proper editing)
+typeset -A IDE_EDITOR_COMMANDS
+IDE_EDITOR_COMMANDS=(
+    ["vscode"]="code --wait"
+    ["cursor"]="cursor --wait"
+    ["zed"]="zed --wait"
+    ["sublime"]="subl -n -w"
+    ["webstorm"]="webstorm --wait"
+    ["intellij"]="idea --wait"
+)
+
 # Get current IDE from config file
 function _get_current_ide() {
     if [ -f "$IDE_CONFIG_FILE" ]; then
@@ -42,11 +65,25 @@ function _get_current_ide() {
     fi
 }
 
-# Set current IDE
+# Set current IDE and configure git/kubectl editors
 function _set_current_ide() {
     local ide="$1"
     mkdir -p "$(dirname "$IDE_CONFIG_FILE")"
     echo "$ide" > "$IDE_CONFIG_FILE"
+
+    # Configure git editor
+    local editor_cmd="${IDE_EDITOR_COMMANDS[$ide]}"
+    if [ -n "$editor_cmd" ]; then
+        git config --global core.editor "$editor_cmd"
+    fi
+
+    # Configure kubectl editor via environment variable in config file
+    echo "$editor_cmd" > "$KUBE_EDITOR_FILE"
+    export KUBE_EDITOR="$editor_cmd"
+
+    # Configure GIT_EDITOR env var (overrides direnv/other settings)
+    echo "$editor_cmd" > "$GIT_EDITOR_FILE"
+    export GIT_EDITOR="$editor_cmd"
 }
 
 # Switch IDE function
@@ -101,7 +138,12 @@ function switch-ide() {
     fi
 
     _set_current_ide "$selected_ide"
-    echo "Switched to $selected_ide. Run 'source ~/.zshrc' or open new terminal."
+    local editor_cmd="${IDE_EDITOR_COMMANDS[$selected_ide]}"
+    echo "Switched to $selected_ide"
+    echo "  - git core.editor: $editor_cmd"
+    echo "  - GIT_EDITOR: $editor_cmd"
+    echo "  - KUBE_EDITOR: $editor_cmd"
+    echo "Run 'source ~/.zshrc' or open new terminal for full effect."
 }
 
 # The 'code' function that uses the current IDE
@@ -129,6 +171,10 @@ function which-ide() {
     local current=$(_get_current_ide)
     echo "Current IDE: $current"
     echo "Command: ${IDE_COMMANDS[$current]}"
+    echo "Editor: ${IDE_EDITOR_COMMANDS[$current]}"
+    echo "Git core.editor: $(git config --global core.editor)"
+    echo "GIT_EDITOR: $GIT_EDITOR"
+    echo "KUBE_EDITOR: $KUBE_EDITOR"
 }
 
 function _getk8secret(){
