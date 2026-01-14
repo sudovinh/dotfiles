@@ -913,3 +913,75 @@ function setup-claude-bedrock() {
   echo "  claude \"Hello, test message\""
   echo ""
 }
+
+###############################################################################
+# Delete StatefulSets with cascade=orphan
+# Useful for fixing ArgoCD sync issues with immutable StatefulSet fields
+#
+# Usage:
+#   delete-statefulsets-orphan <namespace> [--dry-run]
+#
+# Examples:
+#   delete-statefulsets-orphan logs--loki --dry-run
+#   delete-statefulsets-orphan logs--loki
+###############################################################################
+function delete-statefulsets-orphan() {
+    if [[ $# -lt 1 ]]; then
+        echo "Usage: delete-statefulsets-orphan <namespace> [--dry-run]"
+        echo ""
+        echo "Delete all StatefulSets in a namespace with --cascade=orphan."
+        echo "This keeps PVCs and pods running while removing the StatefulSet resource,"
+        echo "allowing ArgoCD to recreate them with updated specs."
+        echo ""
+        echo "Examples:"
+        echo "  delete-statefulsets-orphan logs--loki --dry-run"
+        echo "  delete-statefulsets-orphan logs--loki"
+        return 1
+    fi
+
+    local namespace="$1"
+    shift
+
+    local dry_run_flag=""
+    if [[ ${1-} == "--dry-run" ]]; then
+        dry_run_flag="true"
+        echo "=== DRY RUN MODE ==="
+    fi
+
+    echo "Namespace: ${namespace}"
+    echo "Current kubectl context: $(kubectl config current-context)"
+    echo ""
+
+    # Get all StatefulSets in the namespace
+    local statefulsets
+    statefulsets=$(kubectl get statefulset --namespace="${namespace}" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null)
+
+    if [[ -z ${statefulsets} ]]; then
+        echo "No StatefulSets found in namespace ${namespace}"
+        return 0
+    fi
+
+    echo "=== Deleting StatefulSets (cascade=orphan) ==="
+    echo "This will delete the StatefulSet resources but keep PVCs and pods running."
+    echo "ArgoCD will recreate the StatefulSets on next sync."
+    echo ""
+
+    for sts in ${=statefulsets}; do
+        echo "Deleting StatefulSet: ${sts}"
+        if [[ -n ${dry_run_flag} ]]; then
+            echo "  [dry-run] would delete statefulset/${sts}"
+        else
+            kubectl delete statefulset "${sts}" \
+                --namespace="${namespace}" \
+                --cascade=orphan
+        fi
+    done
+
+    echo ""
+    echo "Done!"
+    echo ""
+    echo "Next steps:"
+    echo "1. Trigger an ArgoCD sync to recreate the StatefulSets"
+    echo "2. Verify pods are running: kubectl get pods -n ${namespace}"
+    echo "3. Check ArgoCD sync status"
+}
