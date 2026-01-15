@@ -36,7 +36,6 @@ alias gpull="git pull origin HEAD"
 alias gcheck="git checkout $1"
 alias gcmain="git checkout main && git pull origin main"
 alias gfrebase='git fetch -p && git rebase --autostash origin/main'
-# grebase is now a function in .zsh_functions (handles Claude Code environment)
 alias gresetcommit='git reset HEAD~'
 alias gsubmitplz='git-submit --force-with-lease --ignore-multiple-codeowners-groups-warning $1'
 alias glogline='git log --oneline origin/main..HEAD'

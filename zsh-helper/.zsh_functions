@@ -177,9 +177,8 @@ function which-ide() {
     echo "KUBE_EDITOR: $KUBE_EDITOR"
 }
 
-# Interactive git rebase that works even in Claude Code environment
-# Claude Code sets GIT_EDITOR=true which breaks interactive rebase
-# Uses --new flag for Zed to prevent showing cached/stale rebase-todo files
+# Interactive git rebase with Zed editor fix
+# Uses --new flag to prevent Zed session restore showing stale rebase-todo files
 function grebase() {
   git fetch
 
