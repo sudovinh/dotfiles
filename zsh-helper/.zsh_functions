@@ -177,6 +177,32 @@ function which-ide() {
     echo "KUBE_EDITOR: $KUBE_EDITOR"
 }
 
+# Interactive git rebase that works even in Claude Code environment
+# Claude Code sets GIT_EDITOR=true which breaks interactive rebase
+# Uses --new flag for Zed to prevent showing cached/stale rebase-todo files
+function grebase() {
+  git fetch
+
+  local real_editor
+  if [[ -f "$HOME/.config/dotfiles/git_editor" ]]; then
+    real_editor="$(cat "$HOME/.config/dotfiles/git_editor")"
+  else
+    real_editor="$(git config core.editor)"
+  fi
+
+  # If editor is Zed, use --new to avoid session restore showing stale files
+  if [[ "$real_editor" == *"zed"* ]]; then
+    real_editor="zed --new --wait"
+  fi
+
+  if [[ -n "$real_editor" ]]; then
+    GIT_EDITOR="$real_editor" git rebase -i --autosquash --autostash origin/main
+  else
+    echo "No editor available, running non-interactive rebase"
+    git rebase --autosquash --autostash origin/main
+  fi
+}
+
 function _getk8secret(){
   kubectl get secrets $1 -n $2 -o yaml >> $1.yaml
 }
