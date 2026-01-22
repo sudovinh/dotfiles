@@ -939,6 +939,78 @@ function setup-claude-bedrock() {
   echo ""
 }
 
+# List Bedrock inference profiles - Show existing AWS Bedrock inference profiles
+function list-bedrock-profiles() {
+  local REGION="us-west-2"
+  local TYPE="APPLICATION"
+  local VERBOSE=false
+
+  # Parse command line arguments
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -r|--region)
+        REGION="$2"
+        shift 2
+        ;;
+      -t|--type)
+        TYPE="$2"
+        shift 2
+        ;;
+      -a|--all)
+        TYPE=""
+        shift
+        ;;
+      -v|--verbose)
+        VERBOSE=true
+        shift
+        ;;
+      -h|--help)
+        echo "Usage: list-bedrock-profiles [OPTIONS]"
+        echo ""
+        echo "List existing AWS Bedrock inference profiles"
+        echo ""
+        echo "Options:"
+        echo "  -r, --region REGION       AWS region (default: us-west-2)"
+        echo "  -t, --type TYPE           Profile type: APPLICATION or SYSTEM (default: APPLICATION)"
+        echo "  -a, --all                 Show all profile types"
+        echo "  -v, --verbose             Show full details including ARN"
+        echo "  -h, --help                Show this help message"
+        echo ""
+        echo "Examples:"
+        echo "  list-bedrock-profiles                  # List your application profiles"
+        echo "  list-bedrock-profiles -t SYSTEM       # List available system profiles"
+        echo "  list-bedrock-profiles -a              # List all profiles"
+        echo "  list-bedrock-profiles -v              # Show full details"
+        return 0
+        ;;
+      *)
+        echo "Unknown option: $1"
+        echo "Use -h or --help for usage information"
+        return 1
+        ;;
+    esac
+  done
+
+  local QUERY_ARGS=("--region" "$REGION")
+
+  if [ -n "$TYPE" ]; then
+    QUERY_ARGS+=("--type-equals" "$TYPE")
+  fi
+
+  echo "Listing Bedrock inference profiles (region: $REGION, type: ${TYPE:-ALL})"
+  echo "=========================================="
+
+  if [ "$VERBOSE" = true ]; then
+    aws bedrock list-inference-profiles "${QUERY_ARGS[@]}" \
+      --query "inferenceProfileSummaries[].{Name:inferenceProfileName,ID:inferenceProfileId,ARN:inferenceProfileArn,Type:type,Status:status}" \
+      --output table
+  else
+    aws bedrock list-inference-profiles "${QUERY_ARGS[@]}" \
+      --query "inferenceProfileSummaries[].{Name:inferenceProfileName,ID:inferenceProfileId,Type:type,Status:status}" \
+      --output table
+  fi
+}
+
 ###############################################################################
 # Delete StatefulSets with cascade=orphan
 # Useful for fixing ArgoCD sync issues with immutable StatefulSet fields
