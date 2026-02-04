@@ -1082,3 +1082,78 @@ function delete-statefulsets-orphan() {
     echo "2. Verify pods are running: kubectl get pods -n ${namespace}"
     echo "3. Check ArgoCD sync status"
 }
+
+###############################################################################
+# Get last restart state for pods in a namespace
+# Shows why pods restarted (OOMKilled, Error, etc.)
+#
+# Usage:
+#   kpod-last-state <namespace>           # All pods in namespace
+#   kpod-last-state <namespace> <pod>     # Specific pod
+#
+# Examples:
+#   kpod-last-state monitoring--prometheus
+#   kpod-last-state web--jobboard my-pod-0
+###############################################################################
+function kpod-last-state() {
+    if [[ $# -lt 1 ]]; then
+        echo "Usage: kpod-last-state <namespace> [pod-name]"
+        echo ""
+        echo "Show the last termination state for restarted pods."
+        echo "Displays reason, exit code, and timestamps for container restarts."
+        echo ""
+        echo "Examples:"
+        echo "  kpod-last-state monitoring--prometheus"
+        echo "  kpod-last-state web--jobboard my-pod-0"
+        return 1
+    fi
+
+    local namespace="$1"
+    local pod_name="${2:-}"
+
+    if [[ -n "$pod_name" ]]; then
+        # Single pod
+        echo "=== Last State for pod: $pod_name ==="
+        kubectl get pod "$pod_name" -n "$namespace" -o json 2>/dev/null | jq -r '
+            .status.containerStatuses[]? |
+            select(.restartCount > 0) |
+            "Container: \(.name)\n  Restart Count: \(.restartCount)\n  Last State: \(.lastState.terminated.reason // "N/A")\n  Exit Code: \(.lastState.terminated.exitCode // "N/A")\n  Finished: \(.lastState.terminated.finishedAt // "N/A")\n  Message: \(.lastState.terminated.message // "N/A")\n"
+        '
+    else
+        # All pods in namespace
+        echo "=== Last State for restarted pods in namespace: $namespace ==="
+        kubectl get pods -n "$namespace" -o json 2>/dev/null | jq -r '
+            .items[] |
+            . as $pod |
+            .status.containerStatuses[]? |
+            select(.restartCount > 0) |
+            "Pod: \($pod.metadata.name)\n  Container: \(.name)\n  Restart Count: \(.restartCount)\n  Last State: \(.lastState.terminated.reason // "N/A")\n  Exit Code: \(.lastState.terminated.exitCode // "N/A")\n  Finished: \(.lastState.terminated.finishedAt // "N/A")\n"
+        '
+    fi
+
+    # Check if any output was produced
+    local result
+    if [[ -n "$pod_name" ]]; then
+        result=$(kubectl get pod "$pod_name" -n "$namespace" -o json 2>/dev/null | jq -r '.status.containerStatuses[]? | select(.restartCount > 0) | .name')
+    else
+        result=$(kubectl get pods -n "$namespace" -o json 2>/dev/null | jq -r '.items[].status.containerStatuses[]? | select(.restartCount > 0) | .name')
+    fi
+
+    if [[ -z "$result" ]]; then
+        echo "No restarted containers found."
+    fi
+}
+
+###############################################################################
+# Get pods with restarts only, sorted by restart count
+#
+# Usage:
+#   kgetrestarts                          # Current namespace
+#   kgetrestarts -n <namespace>           # Specific namespace
+#   kgetrestarts -A                       # All namespaces
+###############################################################################
+function kgetrestarts() {
+    kubectl get pods "$@" --sort-by=".status.containerStatuses[0].restartCount" \
+        -o custom-columns="NAME:.metadata.name,RESTARTS:.status.containerStatuses[0].restartCount,STATUS:.status.phase" \
+        | awk 'NR==1 || $2>0'
+}
