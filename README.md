@@ -66,6 +66,8 @@ dotfiles/
 │   ├── main/             # Personal devbox packages
 │   └── work/             # Work devbox packages
 ├── dot/                  # Chezmoi-managed dotfiles
+│   ├── dot_local/bin/    # Scripts installed to ~/.local/bin/
+│   │   └── executable_git-clone-bare-for-worktrees
 │   ├── dot_zshrc.tmpl    # Zsh configuration
 │   ├── dot_gitconfig.tmpl
 │   └── ...
@@ -74,6 +76,7 @@ dotfiles/
 ├── zsh-helper/           # Shell utilities
 │   ├── .zsh_aliases
 │   ├── .zsh_functions
+│   ├── .zsh_worktrees    # Git worktree helpers (wt-add, wt-rm, wt-ls, etc.)
 │   └── ...
 ├── .env.example          # Configuration template
 ├── .env                  # Your local config (gitignored)
@@ -104,6 +107,7 @@ Profiles affect:
 - **Devbox**: Nix-based reproducible dev environments
 - **Claude Code**: Managed settings with `includeCoAuthoredBy: false`
 - **IDE Switcher**: Switch between VS Code, Cursor, Zed with one command
+- **Git Worktrees**: Bare-repo worktree workflow with `git-clone-bare-for-worktrees` bootstrap and shell helpers
 - **macOS Defaults**: Sensible system preferences (configurable via .env)
 
 ## macOS Defaults
@@ -150,6 +154,48 @@ code myfile.txt
 ```
 
 Supports: VS Code, Cursor, Zed, Sublime Text, WebStorm, IntelliJ
+
+## Git Worktrees
+
+A bare-repo worktree workflow for working on multiple branches simultaneously without stashing or switching.
+
+### Bootstrap Script
+
+`git-clone-bare-for-worktrees` (installed to `~/.local/bin/` via chezmoi) sets up any repo for worktrees:
+
+```bash
+# Basic usage
+git-clone-bare-for-worktrees git@github.com:org/repo.git ~/projects/repo
+
+# With selective fetch (only fetches configured refspecs)
+git-clone-bare-for-worktrees --selective-fetch git@github.com:org/repo.git ~/work
+```
+
+This creates a `<dir>/.bare/` + `<dir>/.git` file structure, then worktrees are added as sibling directories.
+
+### Shell Functions (generic)
+
+Sourced from `zsh-helper/.zsh_worktrees`:
+
+| Function | Description |
+|----------|-------------|
+| `wt-add <name> [branch]` | Add a worktree from the bare repo root |
+| `wt-rm <name>` | Remove a worktree (warns on uncommitted changes) |
+| `wt-ls` | List worktrees with branch, last commit, dirty status |
+| `wt-inspect [days]` | Find stale worktrees (default >7 days) |
+| `cdwt` | cd to the bare repo root |
+| `cdz` | cd to the current worktree root |
+
+### Work-Specific Wrappers (via dev_setup)
+
+Work-specific wrappers live in `dev_setup/zsh_work` and `dev_setup/worktree-config/`:
+
+- `zr-worktree-init` — one-time setup: bare clone with selective fetch, hooks, main worktree
+- `wt-create <TICKET> [desc]` — creates `$USER.TICKET.desc` branch + worktree off origin/main
+- `worktree-config/envrc` — direnv/devbox integration for worktrees
+- `worktree-config/post-checkout` — git hook that auto-links `.envrc` into new worktrees
+
+See `~/dev_setup/worktree-config/README.md` for full setup and usage instructions.
 
 ## Zed IDE Configuration
 
