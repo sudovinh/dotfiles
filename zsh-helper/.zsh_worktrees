@@ -1,0 +1,192 @@
+# Generic git worktree helper functions
+# Works with bare-repo worktree setups created by git-clone-bare-for-worktrees
+
+# Find the bare repo root (directory containing .bare/)
+_wt_bare_root() {
+  local dir="$PWD"
+  while [[ "$dir" != "/" ]]; do
+    if [[ -d "$dir/.bare" ]]; then
+      echo "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+  echo "Error: not inside a bare-repo worktree setup (no .bare/ found)" >&2
+  return 1
+}
+
+# wt-add <name> [<branch>] — add a worktree from the bare repo root
+# If branch is omitted, creates a new branch with the same name
+wt-add() {
+  if [[ $# -lt 1 ]]; then
+    echo "Usage: wt-add <name> [<branch>]"
+    echo "  If branch is omitted, creates a new branch named <name>"
+    return 1
+  fi
+
+  local root
+  root="$(_wt_bare_root)" || return 1
+
+  local name="$1"
+  local branch="${2:-}"
+  local wt_path="$root/$name"
+
+  if [[ -d "$wt_path" ]]; then
+    echo "Error: $wt_path already exists" >&2
+    return 1
+  fi
+
+  if [[ -n "$branch" ]]; then
+    git -C "$root" worktree add "$wt_path" "$branch"
+  else
+    git -C "$root" worktree add "$wt_path" -b "$name"
+  fi
+}
+
+# wt-rm <name> — remove a worktree with safety check
+wt-rm() {
+  if [[ $# -lt 1 ]]; then
+    echo "Usage: wt-rm <name>"
+    return 1
+  fi
+
+  local root
+  root="$(_wt_bare_root)" || return 1
+
+  local name="$1"
+  local wt_path="$root/$name"
+
+  if [[ ! -d "$wt_path" ]]; then
+    echo "Error: worktree '$name' not found at $wt_path" >&2
+    return 1
+  fi
+
+  # Check for uncommitted changes
+  if [[ -n "$(git -C "$wt_path" status --porcelain 2>/dev/null)" ]]; then
+    echo "Warning: worktree '$name' has uncommitted changes:"
+    git -C "$wt_path" status --short
+    echo ""
+    echo -n "Remove anyway? (y/N) "
+    read -r response
+    if [[ ! "$response" =~ ^[Yy]$ ]]; then
+      echo "Aborted."
+      return 1
+    fi
+  fi
+
+  git -C "$root" worktree remove "$wt_path" --force
+  echo "Removed worktree: $name"
+
+  # Clean up the branch if it still exists
+  local branch
+  branch="$(git -C "$root" branch --list "$name" 2>/dev/null)"
+  if [[ -n "$branch" ]]; then
+    echo -n "Delete local branch '$name'? (y/N) "
+    read -r response
+    if [[ "$response" =~ ^[Yy]$ ]]; then
+      git -C "$root" branch -D "$name"
+    fi
+  fi
+}
+
+# wt-ls — list worktrees with branch, last commit, and status
+wt-ls() {
+  local root
+  root="$(_wt_bare_root)" || return 1
+
+  echo "Worktrees in $root:"
+  echo ""
+
+  git -C "$root" worktree list --porcelain | while IFS= read -r line; do
+    case "$line" in
+      worktree\ *)
+        wt_path="${line#worktree }"
+        ;;
+      branch\ *)
+        branch="${line#branch refs/heads/}"
+        ;;
+      HEAD\ *)
+        head="${line#HEAD }"
+        ;;
+      "")
+        if [[ -n "${wt_path:-}" ]]; then
+          local name
+          name="$(basename "$wt_path")"
+          local dirty=""
+          if [[ -d "$wt_path" ]] && [[ -n "$(git -C "$wt_path" status --porcelain 2>/dev/null)" ]]; then
+            dirty=" [dirty]"
+          fi
+          local last_commit=""
+          if [[ -d "$wt_path" ]]; then
+            last_commit="$(git -C "$wt_path" log -1 --format='%cr - %s' 2>/dev/null | head -c 80)"
+          fi
+          printf "  %-40s %-30s %s%s\n" "$name" "${branch:-detached}" "$last_commit" "$dirty"
+        fi
+        unset wt_path branch head
+        ;;
+    esac
+  done
+}
+
+# wt-inspect — find stale worktrees (>7 days since last commit)
+wt-inspect() {
+  local root
+  root="$(_wt_bare_root)" || return 1
+
+  local stale_days="${1:-7}"
+  local stale_seconds=$((stale_days * 86400))
+  local now
+  now="$(date +%s)"
+  local found_stale=false
+
+  echo "Worktrees with no commits in the last ${stale_days} days:"
+  echo ""
+
+  git -C "$root" worktree list --porcelain | while IFS= read -r line; do
+    case "$line" in
+      worktree\ *)
+        wt_path="${line#worktree }"
+        ;;
+      branch\ *)
+        branch="${line#branch refs/heads/}"
+        ;;
+      "")
+        if [[ -n "${wt_path:-}" ]] && [[ -d "$wt_path" ]]; then
+          local name
+          name="$(basename "$wt_path")"
+          local last_epoch
+          last_epoch="$(git -C "$wt_path" log -1 --format='%ct' 2>/dev/null || echo 0)"
+          local age=$(( now - last_epoch ))
+          if [[ $age -gt $stale_seconds ]]; then
+            local days_ago=$(( age / 86400 ))
+            printf "  %-40s %-30s %d days ago\n" "$name" "${branch:-detached}" "$days_ago"
+            found_stale=true
+          fi
+        fi
+        unset wt_path branch
+        ;;
+    esac
+  done
+
+  if [[ "$found_stale" == false ]]; then
+    echo "  (none)"
+  fi
+}
+
+# cdwt — cd to the bare repo root
+cdwt() {
+  local root
+  root="$(_wt_bare_root)" || return 1
+  cd "$root"
+}
+
+# cdz — cd to the current worktree root (top-level of the checkout)
+cdz() {
+  local toplevel
+  toplevel="$(git rev-parse --show-toplevel 2>/dev/null)"
+  if [[ -z "$toplevel" ]]; then
+    echo "Error: not inside a git working tree" >&2
+    return 1
+  fi
+  cd "$toplevel"
+}

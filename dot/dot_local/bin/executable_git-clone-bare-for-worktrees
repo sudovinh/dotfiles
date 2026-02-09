@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: git-clone-bare-for-worktrees [OPTIONS] <git-url> [directory]
+
+Clone a git repository as a bare repo optimized for git worktrees.
+
+Creates:
+  <directory>/
+    .bare/          # bare git internals
+    .git            # file pointing to .bare
+
+OPTIONS:
+  --selective-fetch   Configure fetch to only track specific refspecs.
+                      After cloning, only refs/heads/main is fetched.
+                      Add more with: git config --add remote.origin.fetch "<refspec>"
+  -h, --help          Show this help message
+
+EXAMPLES:
+  git-clone-bare-for-worktrees git@github.com:org/repo.git
+  git-clone-bare-for-worktrees git@github.com:org/repo.git ~/projects/repo
+  git-clone-bare-for-worktrees --selective-fetch git@github.com:org/repo.git ~/zr
+USAGE
+}
+
+selective_fetch=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --selective-fetch)
+      selective_fetch=true
+      shift
+      ;;
+    -*)
+      echo "Error: Unknown option '$1'" >&2
+      usage >&2
+      exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+if [[ $# -lt 1 ]]; then
+  echo "Error: git URL is required" >&2
+  usage >&2
+  exit 1
+fi
+
+git_url="$1"
+dir="${2:-$(basename "$git_url" .git)}"
+
+if [[ -d "$dir/.bare" ]]; then
+  echo "Error: $dir/.bare already exists" >&2
+  exit 1
+fi
+
+echo "Cloning $git_url into $dir/.bare ..."
+git clone --bare "$git_url" "$dir/.bare"
+
+# Create .git file pointing to .bare
+echo "gitdir: ./.bare" > "$dir/.git"
+
+# Prevent fetch from mirroring into the bare repo's own refs
+# (bare clone defaults to +refs/*:refs/* which conflicts with worktrees)
+git -C "$dir/.bare" config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+
+if [[ "$selective_fetch" == true ]]; then
+  echo "Configuring selective fetch (main only) ..."
+  git -C "$dir/.bare" config remote.origin.fetch "+refs/heads/main:refs/remotes/origin/main"
+fi
+
+echo "Fetching remote branches ..."
+git -C "$dir/.bare" fetch origin
+
+echo ""
+echo "Done. Bare repo created at: $dir/"
+echo ""
+echo "Next steps:"
+echo "  cd $dir"
+echo "  git worktree add main main          # create a worktree for main"
+echo "  git worktree add feature FETCH_HEAD  # create a worktree from a fetched branch"
+echo ""
+if [[ "$selective_fetch" == true ]]; then
+  echo "Selective fetch is enabled. To track additional branches:"
+  echo "  cd $dir"
+  echo '  git config --add remote.origin.fetch "+refs/heads/PATTERN:refs/remotes/origin/PATTERN"'
+  echo "  git fetch origin"
+  echo ""
+  echo "To fetch a single branch ad-hoc:"
+  echo "  git fetch origin <branch> && git worktree add <name> FETCH_HEAD"
+fi
