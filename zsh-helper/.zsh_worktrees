@@ -190,3 +190,246 @@ cdz() {
   fi
   cd "$toplevel"
 }
+
+# wt-frebase [<base>] — fetch and rebase current worktree on origin/main (or specified base)
+wt-frebase() {
+  local root
+  root="$(_wt_bare_root)" || return 1
+
+  local base="${1:-origin/main}"
+
+  echo "Fetching and rebasing on $base..."
+  git -C "$root" fetch -p && git rebase --autostash "$base"
+}
+
+# wt-frebase-all [<base>] — fetch and rebase all worktrees on origin/main (or specified base)
+wt-frebase-all() {
+  local root
+  root="$(_wt_bare_root)" || return 1
+
+  local base="${1:-origin/main}"
+
+  echo "Fetching..."
+  git -C "$root" fetch -p
+
+  echo ""
+  echo "Rebasing all worktrees on $base..."
+  echo ""
+
+  git -C "$root" worktree list --porcelain | while IFS= read -r line; do
+    case "$line" in
+      worktree\ *)
+        wt_path="${line#worktree }"
+        ;;
+      branch\ *)
+        branch="${line#branch refs/heads/}"
+        ;;
+      "")
+        if [[ -n "${wt_path:-}" ]] && [[ -d "$wt_path" ]] && [[ -n "${branch:-}" ]]; then
+          local name
+          name="$(basename "$wt_path")"
+
+          # Skip if it's the bare repo itself
+          if [[ "$wt_path" == "$root" ]] || [[ "$name" == ".bare" ]]; then
+            unset wt_path branch
+            continue
+          fi
+
+          echo "→ Rebasing $name ($branch)..."
+          if git -C "$wt_path" rebase --autostash "$base" 2>&1; then
+            echo "  ✓ Done"
+          else
+            echo "  ✗ Rebase failed or conflicts — run 'cd $wt_path && git rebase --continue' to resolve"
+          fi
+          echo ""
+        fi
+        unset wt_path branch
+        ;;
+    esac
+  done
+}
+
+# wt-status — show rebase/merge status for all worktrees
+wt-status() {
+  local root
+  root="$(_wt_bare_root)" || return 1
+
+  echo "Worktree status in $root:"
+  echo ""
+
+  git -C "$root" worktree list --porcelain | while IFS= read -r line; do
+    case "$line" in
+      worktree\ *)
+        wt_path="${line#worktree }"
+        ;;
+      branch\ *)
+        branch="${line#branch refs/heads/}"
+        ;;
+      "")
+        if [[ -n "${wt_path:-}" ]] && [[ -d "$wt_path" ]]; then
+          local name
+          name="$(basename "$wt_path")"
+
+          # Skip bare repo
+          if [[ "$name" == ".bare" ]]; then
+            unset wt_path branch
+            continue
+          fi
+
+          local status_flags=""
+
+          # Check for ongoing rebase
+          if [[ -d "$wt_path/.git/rebase-merge" ]] || [[ -d "$wt_path/.git/rebase-apply" ]]; then
+            status_flags+=" [REBASING]"
+          fi
+
+          # Check for merge in progress
+          if [[ -f "$wt_path/.git/MERGE_HEAD" ]]; then
+            status_flags+=" [MERGING]"
+          fi
+
+          # Check for uncommitted changes
+          if [[ -n "$(git -C "$wt_path" status --porcelain 2>/dev/null)" ]]; then
+            status_flags+=" [dirty]"
+          fi
+
+          # Check commits ahead/behind origin/main
+          local ahead_behind=""
+          ahead_behind="$(git -C "$wt_path" rev-list --left-right --count origin/main...HEAD 2>/dev/null)"
+          if [[ -n "$ahead_behind" ]]; then
+            local behind="${ahead_behind%%	*}"
+            local ahead="${ahead_behind##*	}"
+            if [[ "$ahead" -gt 0 ]] || [[ "$behind" -gt 0 ]]; then
+              status_flags+=" [↑$ahead ↓$behind]"
+            fi
+          fi
+
+          printf "  %-30s %-25s%s\n" "$name" "${branch:-detached}" "$status_flags"
+        fi
+        unset wt_path branch
+        ;;
+    esac
+  done
+}
+
+# wt-rebase [<base>] — interactive rebase current worktree on origin/main (like grebase)
+wt-rebase() {
+  local root
+  root="$(_wt_bare_root)" || return 1
+
+  local base="${1:-origin/main}"
+
+  echo "Fetching..."
+  git -C "$root" fetch -p
+
+  local real_editor
+  if [[ -f "$HOME/.config/dotfiles/git_editor" ]]; then
+    real_editor="$(cat "$HOME/.config/dotfiles/git_editor")"
+  else
+    real_editor="$(git config core.editor)"
+  fi
+
+  # If editor is Zed, use --new to avoid session restore showing stale files
+  if [[ "$real_editor" == *"zed"* ]]; then
+    real_editor="$real_editor --new"
+  fi
+
+  if [[ -n "$real_editor" ]]; then
+    GIT_EDITOR="$real_editor" git rebase -i --autosquash --autostash "$base"
+  else
+    echo "No editor available, running non-interactive rebase"
+    git rebase --autosquash --autostash "$base"
+  fi
+}
+
+# wt-push — push current worktree branch to origin
+wt-push() {
+  git push origin HEAD
+}
+
+# wt-pushforce — force push current worktree branch to origin (with lease)
+wt-pushforce() {
+  git push origin HEAD --force-with-lease
+}
+
+# wt-logline — show commits in current worktree since origin/main
+wt-logline() {
+  local base="${1:-origin/main}"
+  git log --oneline "$base"..HEAD
+}
+
+# wt-resetcommit — undo last commit in current worktree (keep changes staged)
+wt-resetcommit() {
+  git reset HEAD~
+}
+
+# wt-resetbranch — reset current worktree branch to match remote
+wt-resetbranch() {
+  local root
+  root="$(_wt_bare_root)" || return 1
+
+  local branch_name
+  branch_name="$(git rev-parse --abbrev-ref HEAD)"
+
+  if [[ -z "$branch_name" ]]; then
+    echo "Error: Unable to determine the current branch." >&2
+    return 1
+  fi
+
+  echo "Fetching the latest changes from origin..."
+  git -C "$root" fetch origin
+
+  echo "Resetting the local branch '$branch_name' to match 'origin/$branch_name'..."
+  git reset --hard origin/"$branch_name"
+
+  echo "The local branch '$branch_name' is now in sync with 'origin/$branch_name'."
+}
+
+# wt-hardreset — hard reset current worktree to origin/main (like ghardresetmain)
+wt-hardreset() {
+  local root
+  root="$(_wt_bare_root)" || return 1
+
+  local base="${1:-origin/main}"
+
+  echo "Fetching and hard resetting to $base..."
+  git -C "$root" fetch origin && git clean -fd && git reset --hard "$base"
+}
+
+# wt-cd <name> — cd to a specific worktree by name
+wt-cd() {
+  if [[ $# -lt 1 ]]; then
+    echo "Usage: wt-cd <name>"
+    return 1
+  fi
+
+  local root
+  root="$(_wt_bare_root)" || return 1
+
+  local name="$1"
+  local wt_path="$root/$name"
+
+  if [[ ! -d "$wt_path" ]]; then
+    echo "Error: worktree '$name' not found at $wt_path" >&2
+    echo "Available worktrees:"
+    wt-ls
+    return 1
+  fi
+
+  cd "$wt_path"
+}
+
+# wt-main — cd to the main worktree and pull latest
+wt-main() {
+  local root
+  root="$(_wt_bare_root)" || return 1
+
+  local main_wt="$root/main"
+
+  if [[ ! -d "$main_wt" ]]; then
+    echo "Error: main worktree not found at $main_wt" >&2
+    return 1
+  fi
+
+  cd "$main_wt" && git pull origin main
+}
