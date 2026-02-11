@@ -1,6 +1,6 @@
 {
   "env": {
-    "PATH": "$HOME/ziprecruiter/bin:$HOME/ziprecruiter/infrastructure/terraform/bin:$PATH"
+    "PATH": "$HOME/zr/main/bin:$HOME/zr/main/infrastructure/terraform/bin:$PATH"
   },
   "packages": {
     "vulnix": "latest",
