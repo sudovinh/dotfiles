@@ -15,6 +15,81 @@ _wt_bare_root() {
   return 1
 }
 
+# Idempotently add extra remotes from WT_EXTRA_REMOTES associative array
+# Usage: _wt_ensure_remotes [bare_root_path]
+_wt_ensure_remotes() {
+  # No-op if WT_EXTRA_REMOTES is not set or empty
+  if [[ -z "${(t)WT_EXTRA_REMOTES}" ]] || [[ ${#WT_EXTRA_REMOTES} -eq 0 ]]; then
+    return 0
+  fi
+
+  local root="${1:-}"
+  if [[ -z "$root" ]]; then
+    root="$(_wt_bare_root)" || return 1
+  fi
+
+  local git_dir="$root/.bare"
+  if [[ ! -d "$git_dir" ]]; then
+    echo "Error: no .bare/ found at $root" >&2
+    return 1
+  fi
+
+  local name url
+  for name url in "${(@kv)WT_EXTRA_REMOTES}"; do
+    # Skip if remote already exists
+    if git -C "$git_dir" remote get-url "$name" &>/dev/null; then
+      continue
+    fi
+
+    echo "Adding remote '$name' → $url"
+    git -C "$git_dir" remote add "$name" "$url"
+
+    # Apply custom refspecs if defined
+    if [[ -n "${WT_EXTRA_REMOTE_REFSPECS[$name]:-}" ]]; then
+      local refspec
+      for refspec in ${(s:;:)WT_EXTRA_REMOTE_REFSPECS[$name]}; do
+        git -C "$git_dir" config --add "remote.$name.fetch" "$refspec"
+      done
+    fi
+
+    echo "Fetching '$name'..."
+    if ! git -C "$git_dir" fetch "$name" 2>&1; then
+      echo "Warning: fetch failed for remote '$name' (remote was still added)" >&2
+    fi
+  done
+}
+
+# wt-remotes — show configured remotes and WT_EXTRA_REMOTES status
+wt-remotes() {
+  local root
+  root="$(_wt_bare_root)" || return 1
+
+  local git_dir="$root/.bare"
+
+  echo "Git remotes in $root:"
+  echo ""
+  git -C "$git_dir" remote -v | while IFS= read -r line; do
+    echo "  $line"
+  done
+
+  echo ""
+
+  if [[ -z "${(t)WT_EXTRA_REMOTES}" ]] || [[ ${#WT_EXTRA_REMOTES} -eq 0 ]]; then
+    echo "WT_EXTRA_REMOTES: (not configured)"
+    return 0
+  fi
+
+  echo "WT_EXTRA_REMOTES:"
+  local name url
+  for name url in "${(@kv)WT_EXTRA_REMOTES}"; do
+    local status="missing"
+    if git -C "$git_dir" remote get-url "$name" &>/dev/null; then
+      status="active"
+    fi
+    printf "  %-20s %-50s [%s]\n" "$name" "$url" "$status"
+  done
+}
+
 # wt-add <name> [<branch>] — add a worktree from the bare repo root
 # If branch is omitted, creates a new branch with the same name
 wt-add() {
@@ -41,6 +116,8 @@ wt-add() {
   else
     git -C "$root" worktree add "$wt_path" -b "$name"
   fi
+
+  _wt_ensure_remotes "$root"
 }
 
 # wt-rm <name> — remove a worktree with safety check
@@ -432,4 +509,79 @@ wt-main() {
   fi
 
   cd "$main_wt" && git pull origin main
+}
+
+# wt-help — show all worktree commands with usage examples
+wt-help() {
+  cat <<'EOF'
+Git Worktree Helper Commands
+=============================
+
+Worktree Management:
+  wt-add <name> [<branch>]        Add a worktree (new branch if branch omitted)
+                                     wt-add my-feature
+                                     wt-add hotfix origin/release-1.0
+
+  wt-rm <name>                    Remove a worktree (prompts if dirty)
+                                     wt-rm my-feature
+
+  wt-ls                           List all worktrees with branch and last commit
+                                     wt-ls
+
+  wt-inspect [<days>]             Find stale worktrees (default: 7 days)
+                                     wt-inspect
+                                     wt-inspect 14
+
+  wt-status                       Show rebase/merge/dirty status for all worktrees
+                                     wt-status
+
+Navigation:
+  wt-cd <name>                    cd to a worktree by name
+                                     wt-cd my-feature
+
+  wt-main                         cd to main worktree and pull latest
+                                     wt-main
+
+  cdwt                            cd to the bare repo root
+                                     cdwt
+
+  cdz                             cd to the current worktree root
+                                     cdz
+
+Rebase & Sync:
+  wt-frebase [<base>]             Fetch + rebase current worktree (default: origin/main)
+                                     wt-frebase
+                                     wt-frebase origin/release-1.0
+
+  wt-frebase-all [<base>]         Fetch + rebase ALL worktrees
+                                     wt-frebase-all
+
+  wt-rebase [<base>]              Interactive rebase current worktree
+                                     wt-rebase
+                                     wt-rebase origin/main
+
+Push:
+  wt-push                         Push current branch to origin
+                                     wt-push
+
+  wt-pushforce                    Force push with lease to origin
+                                     wt-pushforce
+
+History & Reset:
+  wt-logline [<base>]             Show commits since base (default: origin/main)
+                                     wt-logline
+
+  wt-resetcommit                  Undo last commit (keep changes staged)
+                                     wt-resetcommit
+
+  wt-resetbranch                  Reset current branch to match its remote
+                                     wt-resetbranch
+
+  wt-hardreset [<base>]           Hard reset to base (default: origin/main)
+                                     wt-hardreset
+
+Remotes:
+  wt-remotes                      Show git remotes and WT_EXTRA_REMOTES status
+                                     wt-remotes
+EOF
 }
