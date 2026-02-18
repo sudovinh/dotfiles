@@ -246,12 +246,12 @@ function _knetworktest() {
     kubectl run vinh-tmp-shell --rm -i --tty -n examples--emojivoto --image=$img --restart=Never -- /bin/bash
 }
 
-function _newbashscript() { 
-    if [ -z "$2" ]; then 
-        cp ~/scripts/template_bash_script "$1/default_script"; 
-    else 
-        cp ~/scripts/template_bash_script "$1/$2.sh"; 
-    fi; 
+function _newbashscript() {
+    if [ -z "$2" ]; then
+        cp ~/scripts/template_bash_script "$1/default_script";
+    else
+        cp ~/scripts/template_bash_script "$1/$2.sh";
+    fi;
 }
 
 function gitcommit() {
@@ -467,7 +467,7 @@ function k-why-not-deleted() {
     # Check if resource is marked for deletion
     local deletion_timestamp
     deletion_timestamp=$(kubectl get "$resource_type" "$resource_name" $namespace_args -o jsonpath='{.metadata.deletionTimestamp}' 2>/dev/null)
-    
+
     # Also check for finalizers to see if they exist
     local finalizers_check
     finalizers_check=$(kubectl get "$resource_type" "$resource_name" $namespace_args -o jsonpath='{.metadata.finalizers}' 2>/dev/null)
@@ -608,7 +608,7 @@ function k-why-not-deleted() {
     fi
 }
 
-kgpodsnodes() {
+kgetpodsnodes() {
     local namespace="$1"
 
     if [[ -z "$namespace" ]]; then
@@ -1095,7 +1095,7 @@ function delete-statefulsets-orphan() {
 #   kpod-last-state monitoring--prometheus
 #   kpod-last-state web--jobboard my-pod-0
 ###############################################################################
-function kpod-last-state() {
+function kgetpod-last-state() {
     if [[ $# -lt 1 ]]; then
         echo "Usage: kpod-last-state <namespace> [pod-name]"
         echo ""
