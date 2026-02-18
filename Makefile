@@ -32,7 +32,7 @@ DEVBOX_GLOBAL_CONFIG := $(HOME)/.local/share/devbox/global/default
 DOTFILE_SCRIPTS := $(DOTFILES_DIR)/scripts
 HOMEBREW_URL := https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
 CLAUDE_CONFIG_DIR := $(HOME)/.claude
-CLAUDE_SETTINGS := $(DOTFILES_DIR)/claude/settings.json
+DEV_SETUP_DIR := $(HOME)/dev_setup
 OH_MY_ZSH_INSTALL_SCRIPT := https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
 UNAME_S := $(shell uname -s)
 ZSH_PLUGIN_URLS := \
@@ -388,14 +388,20 @@ setup-devbox-config:
 setup-claude-config:
 	@echo "Setting up Claude Code configuration..."
 	@mkdir -p $(CLAUDE_CONFIG_DIR)
-	@# Symlink global settings from dotfiles
-	@if [ -f "$(CLAUDE_SETTINGS)" ]; then \
-		echo "Linking Claude settings.json from dotfiles..."; \
-		ln -sf "$(CLAUDE_SETTINGS)" "$(CLAUDE_CONFIG_DIR)/settings.json"; \
+	@if [ "$(PROFILE)" = "main" ]; then \
+		CLAUDE_LOCAL="$(DEV_SETUP_DIR)/claude_settings_local_main.json"; \
+	elif [ "$(PROFILE)" = "work" ]; then \
+		CLAUDE_LOCAL="$(DEV_SETUP_DIR)/claude_settings_local_work.json"; \
 	else \
-		echo "Warning: $(CLAUDE_SETTINGS) not found. Skipping global settings."; \
+		echo "Warning: PROFILE not set to 'main' or 'work' in .env. Skipping Claude config."; \
+		exit 0; \
+	fi; \
+	if [ -f "$$CLAUDE_LOCAL" ]; then \
+		echo "Linking Claude settings.local.json from $$CLAUDE_LOCAL..."; \
+		ln -sf "$$CLAUDE_LOCAL" "$(CLAUDE_CONFIG_DIR)/settings.local.json"; \
+	else \
+		echo "Warning: $$CLAUDE_LOCAL not found. Skipping Claude local settings."; \
 	fi
-	@# Note: settings.local.json is symlinked by .zshrc based on hostname (work/main)
 	@echo "Claude config setup complete."
 
 .PHONY: setup-macos-defaults
