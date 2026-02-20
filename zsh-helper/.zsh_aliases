@@ -82,3 +82,19 @@ alias zsh-time='time zsh -i -c exit'
 
 ## IDE: use switch-ide to change, which-ide to check current
 # The 'code' function is defined in .zsh_functions
+
+## Tmux
+alias ta='tmux attach -t'
+alias tl='tmux list-sessions'
+alias tn='tmux new -s'
+alias tk='tmux kill-session -t'
+alias td='tmux detach'
+alias tmain='tmux new-session -A -s main'
+alias tmuxhelp='echo "Tmux Aliases:
+  ta <name>    Attach to session
+  tl           List sessions
+  tn <name>    New session
+  tk <name>    Kill session
+  td           Detach
+  tmain        Attach/create \"main\" session
+  tmuxhelp     Show this help"'

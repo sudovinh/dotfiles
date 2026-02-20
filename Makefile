@@ -40,6 +40,8 @@ ZSH_PLUGIN_URLS := \
 	"https://github.com/zsh-users/zsh-autosuggestions.git" \
 	"https://github.com/zsh-users/zsh-syntax-highlighting.git"
 PROFILE_CHOICE :=
+TPM_DIR := $(HOME)/.tmux/plugins/tpm
+TPM_REPO := https://github.com/tmux-plugins/tpm
 
 # ============================================
 # UPDATE TARGETS
@@ -58,11 +60,11 @@ else
 endif
 
 .PHONY: mac-update
-mac-update: select-profile update-chezmoi update-repos update-oh-my-zsh-plugins brew-bundle-default setup-brewfile setup-claude-config refresh-devbox-config clean-profile
+mac-update: select-profile update-chezmoi update-repos update-oh-my-zsh-plugins update-tmux-plugins brew-bundle-default setup-brewfile setup-claude-config refresh-devbox-config clean-profile
 	@echo "macOS update complete."
 
 .PHONY: linux-update
-linux-update: select-profile update-chezmoi update-repos update-oh-my-zsh-plugins setup-claude-config refresh-devbox-config clean-profile
+linux-update: select-profile update-chezmoi update-repos update-oh-my-zsh-plugins update-tmux-plugins setup-claude-config refresh-devbox-config clean-profile
 	@echo "Linux update complete."
 
 .PHONY: update-chezmoi
@@ -205,10 +207,10 @@ else
 endif
 
 .PHONY: mac-init
-mac-init: select-profile install-powerline-fonts install-xcode install-homebrew setup-iterm2-shell-integration setup-chezmoi install-devbox install-direnv brew-bundle-default clone-dev-setup setup-claude-config setup-shell setup-brewfile setup-devbox-config setup-notes clean-profile
+mac-init: select-profile install-powerline-fonts install-xcode install-homebrew setup-iterm2-shell-integration setup-chezmoi install-devbox install-direnv brew-bundle-default clone-dev-setup setup-claude-config setup-shell setup-tmux setup-brewfile setup-devbox-config setup-notes clean-profile
 
 .PHONY: linux-init
-linux-init: select-profile install-powerline-fonts install-devbox install-direnv clone-dev-setup setup-claude-config setup-shell setup-devbox-config setup-chezmoi setup-notes clean-profile
+linux-init: select-profile install-powerline-fonts install-devbox install-direnv clone-dev-setup setup-claude-config setup-shell setup-tmux setup-devbox-config setup-chezmoi setup-notes clean-profile
 	@echo "Setting up for Linux..."
 	# Add additional Linux setup steps here, such as package manager commands.
 
@@ -495,6 +497,26 @@ install-oh-my-zsh-plugins:
 	done
 	@echo "Oh My Zsh plugins installation complete."
 
+.PHONY: setup-tmux
+setup-tmux:
+	@echo "Setting up TPM (Tmux Plugin Manager)..."
+	@if [ ! -d "$(TPM_DIR)" ]; then \
+		echo "Cloning TPM..." && \
+		git clone $(TPM_REPO) $(TPM_DIR) && \
+		echo "TPM installed. Run prefix + I inside tmux to install plugins."; \
+	else \
+		echo "TPM already installed."; \
+	fi
+
+.PHONY: update-tmux-plugins
+update-tmux-plugins:
+	@echo "Updating tmux plugins..."
+	@if [ -x "$(TPM_DIR)/bin/update_plugins" ]; then \
+		$(TPM_DIR)/bin/update_plugins all; \
+	else \
+		echo "TPM not installed. Run 'make setup-tmux' first."; \
+	fi
+
 .PHONY: setup-notes
 setup-notes:
 ifeq ($(OBSIDIAN_NOTES_REPO),)
@@ -525,6 +547,8 @@ help:
 	@echo "  setup-macos-defaults      Apply macOS system preferences (Finder, Dock, keyboard)"
 	@echo "  setup-zed-config    Setup Zed IDE configuration directory"
 	@echo "  select-ide          Choose default IDE (VS Code, Cursor, Zed, Sublime)"
+	@echo "  setup-tmux                Install TPM (Tmux Plugin Manager)"
+	@echo "  update-tmux-plugins       Update all tmux plugins via TPM"
 	@echo "  refresh-devbox-config     Force regenerate devbox lock and reinstall"
 	@echo "  configure           Other setup steps (tbd)"
 	@echo "  print-variables     Print Makefile variables"

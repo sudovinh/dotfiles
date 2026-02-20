@@ -42,6 +42,8 @@ OBSIDIAN_NOTES_REPO=git@github.com:your-username/second-brain.git
 | `make update-repos` | Pull dev_setup and notes repositories |
 | `make update-oh-my-zsh-plugins` | Update all oh-my-zsh plugins |
 | `make setup-claude-config` | Symlink Claude Code settings |
+| `make setup-tmux` | Install TPM (Tmux Plugin Manager) |
+| `make update-tmux-plugins` | Update all tmux plugins via TPM |
 | `make setup-macos-defaults` | Apply macOS system preferences (Finder, Dock, keyboard) |
 | `make setup-zed-config` | Setup Zed IDE configuration directory |
 | `make select-ide` | Choose default IDE (VS Code, Cursor, Zed, Sublime) |
@@ -68,6 +70,7 @@ dotfiles/
 ├── dot/                  # Chezmoi-managed dotfiles
 │   ├── dot_local/bin/    # Scripts installed to ~/.local/bin/
 │   │   └── executable_git-clone-bare-for-worktrees
+│   ├── dot_tmux.conf     # Tmux configuration
 │   ├── dot_zshrc.tmpl    # Zsh configuration
 │   ├── dot_gitconfig.tmpl
 │   └── ...
@@ -196,6 +199,37 @@ Work-specific wrappers live in `dev_setup/zsh_work` and `dev_setup/worktree-conf
 - `worktree-config/post-checkout` — git hook that auto-links `.envrc` into new worktrees
 
 See `~/dev_setup/worktree-config/README.md` for full setup and usage instructions.
+
+## Tmux
+
+Tmux configuration is managed via chezmoi (`dot/dot_tmux.conf` → `~/.tmux.conf`).
+
+**Key bindings:**
+- Prefix: `Ctrl-a` (instead of default `Ctrl-b`)
+- `prefix + |` / `prefix + -` — split panes (horizontal/vertical)
+- `prefix + h/j/k/l` — vim-style pane navigation
+- `prefix + r` — reload config
+
+**Plugins** (managed by [TPM](https://github.com/tmux-plugins/tpm)):
+- `tmux-sensible` — sensible defaults
+- `tmux-resurrect` — persist sessions across restarts
+
+**First-time setup:**
+```bash
+make setup-tmux          # Install TPM
+tmux                     # Start tmux
+# Press Ctrl-a + I to install plugins
+```
+
+**Shell aliases:**
+| Alias | Command |
+|-------|---------|
+| `ta <name>` | Attach to session |
+| `tl` | List sessions |
+| `tn <name>` | New session |
+| `tk <name>` | Kill session |
+| `td` | Detach |
+| `tmain` | Attach or create "main" session |
 
 ## Zed IDE Configuration
 
