@@ -1,8 +1,3 @@
-# Auto-start tmux
-if command -v tmux &>/dev/null && [ -z "$TMUX" ]; then
-  tmux new-session
-fi
-
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -136,6 +131,11 @@ test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell
 
 eval "$(devbox global shellenv)"
 eval "$(direnv hook zsh)"
+
+# Auto-start tmux (after devbox so tmux is in PATH)
+if command -v tmux &>/dev/null && [ -z "$TMUX" ]; then
+  tmux new-session
+fi
 
 # Docker CLI completions (if Docker Desktop installed)
 if [ -d "$HOME/.docker/completions" ]; then
