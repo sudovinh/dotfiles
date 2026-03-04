@@ -134,7 +134,7 @@ eval "$(direnv hook zsh)"
 
 # Auto-start tmux (after devbox so tmux is in PATH)
 if command -v tmux &>/dev/null && [ -z "$TMUX" ]; then
-  tmux new-session
+  tmux new-session -c ~
 fi
 
 # Docker CLI completions (if Docker Desktop installed)
