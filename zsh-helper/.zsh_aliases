@@ -83,18 +83,28 @@ alias zsh-time='time zsh -i -c exit'
 ## IDE: use switch-ide to change, which-ide to check current
 # The 'code' function is defined in .zsh_functions
 
+## Claude
+alias reload-claude='make -C ~/.local/share/chezmoi setup-claude-config'
+
 ## Tmux
-alias ta='tmux attach -t'
-alias tl='tmux list-sessions'
-alias tn='tmux new -s'
-alias tk='tmux kill-session -t'
-alias td='tmux detach'
-alias tmain='tmux new-session -A -s main'
-alias tmuxhelp='echo "Tmux Aliases:
-  ta <name>    Attach to session
-  tl           List sessions
-  tn <name>    New session
-  tk <name>    Kill session
-  td           Detach
-  tmain        Attach/create \"main\" session
-  tmuxhelp     Show this help"'
+alias tm-a='tmux attach -t'
+alias tm-l='tmux list-sessions'
+alias tm-n='tmux new -s'
+alias tm-k='tmux kill-session -t'
+alias tm-d='tmux detach'
+alias tm-main='tmux new-session -A -s main'
+alias tm-help='echo "Tmux Aliases:
+  tm-a <name>    Attach to session
+  tm-l            List sessions
+  tm-n <name>    New session
+  tm-k <name>    Kill session
+  tm-d            Detach
+  tm-main         Attach/create \"main\" session
+  tm-help         Show this help
+
+Copy in tmux:
+  Ctrl-a [        Enter copy mode
+  v               Start selection
+  y               Copy to clipboard (pbcopy)
+  Ctrl-a ]        Paste
+  Option+click    Native terminal select (bypass tmux)"'

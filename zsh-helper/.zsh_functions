@@ -722,6 +722,11 @@ function ecr-login() {
 
 # Setup Claude Bedrock - Create AWS Bedrock application inference profile
 # Converts the setup-claude-bedrock.sh script into a function
+function claude() {
+  make -C ~/.local/share/chezmoi setup-claude-config 2>/dev/null
+  command claude "$@"
+}
+
 function setup-claude-bedrock() {
   # Default values
   local REGION="us-west-2"
