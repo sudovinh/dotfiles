@@ -406,6 +406,39 @@ setup-claude-config:
 	else \
 		echo "Warning: $$CLAUDE_SRC not found. Skipping Claude settings."; \
 	fi
+	@# Symlink custom agents and commands into ~/.claude/ (native discovery)
+	@echo "Setting up custom agents and commands..."
+	@mkdir -p "$(CLAUDE_CONFIG_DIR)/agents" "$(CLAUDE_CONFIG_DIR)/commands"; \
+	rm -f "$(CLAUDE_CONFIG_DIR)/agents/"*.md "$(CLAUDE_CONFIG_DIR)/commands/"*.md; \
+	GLOBAL_AGENTS="$(CHEZMOI_DIR)/claude/agents"; \
+	SHARED_AGENTS="$(DEV_SETUP_CLAUDE_DIR)/agents"; \
+	GLOBAL_COMMANDS="$(CHEZMOI_DIR)/claude/commands"; \
+	SHARED_COMMANDS="$(DEV_SETUP_CLAUDE_DIR)/commands"; \
+	if [ "$(PROFILE)" = "main" ]; then \
+		PROFILE_AGENTS="$(DEV_SETUP_CLAUDE_DIR)/agents_main"; \
+		PROFILE_COMMANDS="$(DEV_SETUP_CLAUDE_DIR)/commands_main"; \
+	elif [ "$(PROFILE)" = "work" ]; then \
+		PROFILE_AGENTS="$(DEV_SETUP_CLAUDE_DIR)/agents_work"; \
+		PROFILE_COMMANDS="$(DEV_SETUP_CLAUDE_DIR)/commands_work"; \
+	else \
+		PROFILE_AGENTS=""; \
+		PROFILE_COMMANDS=""; \
+	fi; \
+	for dir in "$$GLOBAL_AGENTS" "$$SHARED_AGENTS" "$$PROFILE_AGENTS"; do \
+		if [ -n "$$dir" ] && [ -d "$$dir" ]; then \
+			for f in "$$dir"/*.md; do \
+				[ -f "$$f" ] && ln -sf "$$f" "$(CLAUDE_CONFIG_DIR)/agents/$$(basename $$f)"; \
+			done; \
+		fi; \
+	done; \
+	for dir in "$$GLOBAL_COMMANDS" "$$SHARED_COMMANDS" "$$PROFILE_COMMANDS"; do \
+		if [ -n "$$dir" ] && [ -d "$$dir" ]; then \
+			for f in "$$dir"/*.md; do \
+				[ -f "$$f" ] && ln -sf "$$f" "$(CLAUDE_CONFIG_DIR)/commands/$$(basename $$f)"; \
+			done; \
+		fi; \
+	done; \
+	echo "Custom agents/commands setup complete."
 	@echo "Claude config setup complete."
 
 .PHONY: setup-macos-defaults
@@ -543,7 +576,7 @@ help:
 	@echo "  update-chezmoi      Pull and apply chezmoi changes only"
 	@echo "  update-repos        Pull dev_setup and notes repositories"
 	@echo "  update-oh-my-zsh-plugins  Update all oh-my-zsh plugins"
-	@echo "  setup-claude-config Symlink Claude Code settings"
+	@echo "  setup-claude-config Symlink Claude Code settings + setup custom agents/commands plugin"
 	@echo "  setup-macos-defaults      Apply macOS system preferences (Finder, Dock, keyboard)"
 	@echo "  setup-zed-config    Setup Zed IDE configuration directory"
 	@echo "  select-ide          Choose default IDE (VS Code, Cursor, Zed, Sublime)"
