@@ -1,5 +1,6 @@
 tap "cloudquery/tap"
 tap "homebrew/bundle"
+brew "checkmake"
 brew "chezmoi"
 brew "cloudquery/tap/cloudquery"
 brew "docker"
