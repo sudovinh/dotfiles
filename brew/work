@@ -18,6 +18,7 @@ brew "colima", restart_service: :changed
 brew "coreutils"
 brew "docker-compose"
 brew "docker-credential-helper-ecr"
+brew "flox"
 brew "git"
 brew "unbound"
 brew "gnutls"
