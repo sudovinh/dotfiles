@@ -22,9 +22,9 @@ jobs:
         run: |
           CHECKMAKE_VERSION="v0.3.2"
           curl -sSfL \
-            "https://github.com/checkmake/checkmake/releases/download/${CHECKMAKE_VERSION}/checkmake_${CHECKMAKE_VERSION}_linux_amd64.tar.gz" \
-            -o /tmp/checkmake.tar.gz \
-          && tar -xzf /tmp/checkmake.tar.gz -C /tmp \
+            "https://github.com/mrtazz/checkmake/releases/download/${CHECKMAKE_VERSION}/checkmake-${CHECKMAKE_VERSION}.linux.amd64" \
+            -o /tmp/checkmake \
+          && chmod +x /tmp/checkmake \
           && sudo mv /tmp/checkmake /usr/local/bin/checkmake \
           && checkmake --version \
           || echo "::warning::checkmake install failed — lint step will be skipped"
