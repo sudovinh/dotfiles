@@ -2,7 +2,7 @@
 # LINT + TEST
 # ============================================
 
-MK_FILES := Makefile $(wildcard make/*.mk)
+LINT_MK_FILES := Makefile $(wildcard make/*.mk)
 
 .PHONY: lint
 lint:
@@ -11,7 +11,7 @@ lint:
 		echo "checkmake not found. Run: brew install checkmake"; exit 1; \
 	fi
 	@failed=0; \
-	for f in $(MK_FILES); do \
+	for f in $(LINT_MK_FILES); do \
 		echo "  checkmake $$f"; \
 		checkmake "$$f" || failed=1; \
 	done; \
