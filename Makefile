@@ -1,4 +1,5 @@
 SHELL := /bin/bash
+.DEFAULT_GOAL := setup
 
 # ============================================
 # LOAD .env FILE (if exists)
@@ -7,511 +8,268 @@ SHELL := /bin/bash
 export
 
 # ============================================
-# CONFIGURABLE VARIABLES (override in .env)
+# CONFIGURABLE VARIABLES (define in .env)
 # ============================================
 # Required
-GIT_USER ?=
+GIT_USER        ?=
+PROFILE         ?=   # main | work
 
 # Optional - leave empty to skip
-DEV_SETUP_REPO ?=
-OBSIDIAN_NOTES_REPO ?=
+DEV_SETUP_REPO        ?=
+OBSIDIAN_NOTES_REPO   ?=
 
 # ============================================
-# FIXED VARIABLES (do not change)
+# FIXED VARIABLES
 # ============================================
-DOTFILES_DIR := $(HOME)/dotfiles
-BREW_DIR := $(DOTFILES_DIR)/brew
+DOTFILES_DIR    := $(HOME)/dotfiles
+BREW_DIR        := $(DOTFILES_DIR)/brew
 BREWFILE_DEFAULT := $(BREW_DIR)/default
 CHEZMOI_CONFIG_DIR := $(HOME)/.config/chezmoi
-CHEZMOI_DIR := $(HOME)/.local/share/chezmoi
-CONFIGS_DIR := $(DOTFILES_DIR)/configs
+CHEZMOI_DIR     := $(HOME)/.local/share/chezmoi
+CONFIGS_DIR     := $(DOTFILES_DIR)/configs
 DEVBOX_CONFIG_DIR := $(CHEZMOI_DIR)/devbox
 DEVBOX_INSTALL_SCRIPT := https://get.jetify.com/devbox
 DIRENV_INSTALL_SCRIPT := https://direnv.net/install.sh
 DEVBOX_GLOBAL_CONFIG := $(HOME)/.local/share/devbox/global/default
 DOTFILE_SCRIPTS := $(DOTFILES_DIR)/scripts
-HOMEBREW_URL := https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
+HOMEBREW_URL    := https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
 CLAUDE_CONFIG_DIR := $(HOME)/.claude
-DEV_SETUP_DIR := $(HOME)/dev_setup
+DEV_SETUP_DIR   := $(HOME)/dev_setup
 DEV_SETUP_CLAUDE_DIR := $(DEV_SETUP_DIR)/claude
 OH_MY_ZSH_INSTALL_SCRIPT := https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
-UNAME_S := $(shell uname -s)
 ZSH_PLUGIN_URLS := \
 	"https://github.com/zsh-users/zsh-autosuggestions.git" \
 	"https://github.com/zsh-users/zsh-syntax-highlighting.git"
-PROFILE_CHOICE :=
-TPM_DIR := $(HOME)/.tmux/plugins/tpm
-TPM_REPO := https://github.com/tmux-plugins/tpm
+TPM_DIR         := $(HOME)/.tmux/plugins/tpm
+TPM_REPO        := https://github.com/tmux-plugins/tpm
+UNAME_S         := $(shell uname -s)
+
+# Derived paths (depend on PROFILE)
+CHEZMOI_TOML    := $(CONFIGS_DIR)/chezmoi/$(PROFILE).toml
+BREWFILE_PROFILE := $(BREW_DIR)/$(PROFILE)
+DEVBOX_PROFILE_DIR := $(DEVBOX_CONFIG_DIR)/$(PROFILE)
 
 # ============================================
-# UPDATE TARGETS
+# VALIDATION
+# ============================================
+
+.PHONY: check-env
+check-env:
+	@if [ ! -f .env ]; then \
+		echo ""; \
+		echo "ERROR: .env file not found."; \
+		echo "  Copy the example and fill in your values:"; \
+		echo "    cp .env.example .env"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@if [ -z "$(GIT_USER)" ]; then \
+		echo "ERROR: GIT_USER is not set in .env"; exit 1; \
+	fi
+	@if [ "$(PROFILE)" != "main" ] && [ "$(PROFILE)" != "work" ]; then \
+		echo "ERROR: PROFILE must be 'main' or 'work' in .env (got: '$(PROFILE)')"; exit 1; \
+	fi
+	@echo "Config: profile=$(PROFILE) git_user=$(GIT_USER)"
+
+# ============================================
+# DEFAULT: SETUP (idempotent full setup)
+# ============================================
+
+.PHONY: setup
+setup: check-env print-variables
+ifeq ($(UNAME_S), Darwin)
+	$(MAKE) mac-setup
+else ifeq ($(UNAME_S), Linux)
+	$(MAKE) linux-setup
+else
+	@echo "Unsupported OS: $(UNAME_S)"
+	@exit 1
+endif
+
+.PHONY: mac-setup
+mac-setup: \
+	install-xcode \
+	install-homebrew \
+	install-powerline-fonts \
+	setup-iterm2-shell-integration \
+	setup-chezmoi \
+	install-devbox \
+	install-direnv \
+	brew-bundle-default \
+	setup-brewfile \
+	clone-dev-setup \
+	setup-shell \
+	setup-tmux \
+	setup-devbox-config \
+	setup-notes \
+	setup-claude-config
+	@echo ""
+	@echo "macOS setup complete."
+
+.PHONY: linux-setup
+linux-setup: \
+	install-powerline-fonts \
+	install-devbox \
+	install-direnv \
+	clone-dev-setup \
+	setup-shell \
+	setup-tmux \
+	setup-devbox-config \
+	setup-chezmoi \
+	setup-notes \
+	setup-claude-config
+	@echo ""
+	@echo "Linux setup complete."
+
+# ============================================
+# UPDATE (pull latest + re-apply)
 # ============================================
 
 .PHONY: update
-update: print-variables
+update: check-env print-variables
 ifeq ($(UNAME_S), Darwin)
-	@echo "Detected macOS, running update..."
 	$(MAKE) mac-update
 else ifeq ($(UNAME_S), Linux)
-	@echo "Detected Linux, running update..."
 	$(MAKE) linux-update
 else
 	@echo "Unsupported OS"
 endif
 
 .PHONY: mac-update
-mac-update: select-profile update-chezmoi update-repos update-oh-my-zsh-plugins update-tmux-plugins brew-bundle-default setup-brewfile setup-claude-config refresh-devbox-config clean-profile
+mac-update: \
+	update-chezmoi \
+	update-repos \
+	update-oh-my-zsh-plugins \
+	update-tmux-plugins \
+	brew-bundle-default \
+	setup-brewfile \
+	setup-claude-config \
+	refresh-devbox-config
 	@echo "macOS update complete."
 
 .PHONY: linux-update
-linux-update: select-profile update-chezmoi update-repos update-oh-my-zsh-plugins update-tmux-plugins setup-claude-config refresh-devbox-config clean-profile
+linux-update: \
+	update-chezmoi \
+	update-repos \
+	update-oh-my-zsh-plugins \
+	update-tmux-plugins \
+	setup-claude-config \
+	refresh-devbox-config
 	@echo "Linux update complete."
+
+# ============================================
+# CHEZMOI
+# ============================================
+
+.PHONY: setup-chezmoi
+setup-chezmoi:
+ifeq ($(GIT_USER),)
+	@echo "Error: GIT_USER not set."
+	@exit 1
+else
+	@echo "Configuring chezmoi..."
+	@if [ ! -d "$(CHEZMOI_DIR)" ]; then \
+		echo "Initializing chezmoi..." && \
+		chezmoi init --apply $(GIT_USER); \
+	else \
+		echo "Chezmoi already initialized. Pulling updates..." && \
+		chezmoi git pull; \
+	fi
+endif
+	@echo "Linking chezmoi toml config for profile '$(PROFILE)'..."
+	@if [ -f "$(CHEZMOI_TOML)" ]; then \
+		mkdir -p "$(CHEZMOI_CONFIG_DIR)" && \
+		ln -sf "$(CHEZMOI_TOML)" "$(CHEZMOI_CONFIG_DIR)/chezmoi.toml" && \
+		ln -sf "$(CONFIGS_DIR)/chezmoi/chezmoiroot" "$(CHEZMOI_DIR)/.chezmoiroot" && \
+		echo "Chezmoi toml linked: $(CHEZMOI_TOML)"; \
+	else \
+		echo "Warning: $(CHEZMOI_TOML) not found, skipping toml link."; \
+	fi
+	@echo "Chezmoi setup complete."
 
 .PHONY: update-chezmoi
 update-chezmoi:
 	@echo "Updating chezmoi..."
-	@if [ -d "$(CHEZMOI_DIR)" ]; then \
-		echo "Pulling latest changes and applying..." && \
-		chezmoi update --apply; \
-	else \
-		echo "Chezmoi not initialized. Run 'make initialize' first." && \
-		exit 1; \
+	@if [ ! -d "$(CHEZMOI_DIR)" ]; then \
+		echo "Chezmoi not initialized. Run 'make setup' first." && exit 1; \
 	fi
-	@# Re-link profile-specific toml config
-	@bash -c 'if [ -f .profile-choice ]; then \
-		PROFILE_CHOICE=$$(cat .profile-choice); \
-		if [ "$$PROFILE_CHOICE" = "main" ]; then \
-			CHEZMOI_TOML="$(CONFIGS_DIR)/chezmoi/main.toml"; \
-		elif [ "$$PROFILE_CHOICE" = "work" ]; then \
-			CHEZMOI_TOML="$(CONFIGS_DIR)/chezmoi/work.toml"; \
-		else \
-			CHEZMOI_TOML=""; \
-		fi; \
-		if [ -n "$$CHEZMOI_TOML" ] && [ -f "$$CHEZMOI_TOML" ]; then \
-			mkdir -p "$(CHEZMOI_CONFIG_DIR)" && \
-			ln -sf "$$CHEZMOI_TOML" "$(CHEZMOI_CONFIG_DIR)/chezmoi.toml"; \
-		fi; \
-	fi'
+	@chezmoi update --apply
+	@if [ -f "$(CHEZMOI_TOML)" ]; then \
+		mkdir -p "$(CHEZMOI_CONFIG_DIR)" && \
+		ln -sf "$(CHEZMOI_TOML)" "$(CHEZMOI_CONFIG_DIR)/chezmoi.toml"; \
+	fi
 	@echo "Chezmoi update complete."
+
+# ============================================
+# REPOSITORIES
+# ============================================
+
+.PHONY: clone-dev-setup
+clone-dev-setup:
+ifeq ($(DEV_SETUP_REPO),)
+	@echo "DEV_SETUP_REPO not set, skipping."
+else
+	@REPO_NAME=$$(basename $(DEV_SETUP_REPO) .git); \
+	if [ ! -d $(HOME)/$$REPO_NAME ]; then \
+		echo "Cloning dev_setup..." && git clone $(DEV_SETUP_REPO) $(HOME)/$$REPO_NAME; \
+	else \
+		echo "dev_setup already cloned."; \
+	fi
+endif
+
+.PHONY: setup-notes
+setup-notes:
+ifeq ($(OBSIDIAN_NOTES_REPO),)
+	@echo "OBSIDIAN_NOTES_REPO not set, skipping."
+else
+	@REPO_NAME=$$(basename $(OBSIDIAN_NOTES_REPO) .git); \
+	if [ ! -d $(HOME)/$$REPO_NAME ]; then \
+		echo "Cloning notes..." && git clone $(OBSIDIAN_NOTES_REPO) $(HOME)/$$REPO_NAME; \
+	else \
+		echo "Notes repo already cloned."; \
+	fi
+endif
 
 .PHONY: update-repos
 update-repos:
-	@echo "Updating cloned repositories..."
+	@echo "Updating repositories..."
 ifneq ($(DEV_SETUP_REPO),)
-	@# Update dev_setup
 	@REPO_NAME=$$(basename $(DEV_SETUP_REPO) .git); \
 	if [ -d $(HOME)/$$REPO_NAME ]; then \
-		echo "Pulling latest dev_setup changes..." && \
-		cd $(HOME)/$$REPO_NAME && git pull --rebase; \
+		echo "Pulling dev_setup..." && cd $(HOME)/$$REPO_NAME && git pull --rebase; \
 	else \
 		echo "dev_setup not found, skipping."; \
 	fi
 endif
 ifneq ($(OBSIDIAN_NOTES_REPO),)
-	@# Update notes
 	@REPO_NAME=$$(basename $(OBSIDIAN_NOTES_REPO) .git); \
 	if [ -d $(HOME)/$$REPO_NAME ]; then \
-		echo "Pulling latest notes..." && \
-		cd $(HOME)/$$REPO_NAME && git pull --rebase; \
+		echo "Pulling notes..." && cd $(HOME)/$$REPO_NAME && git pull --rebase; \
 	else \
 		echo "Notes repo not found, skipping."; \
 	fi
 endif
 	@echo "Repositories update complete."
 
-.PHONY: update-oh-my-zsh-plugins
-update-oh-my-zsh-plugins:
-	@echo "Updating Oh My Zsh plugins..."
-	@for url in $(ZSH_PLUGIN_URLS); do \
-		plugin_name=$$(basename $$url .git); \
-		plugin_dir=$${ZSH_CUSTOM:-$(HOME)/.oh-my-zsh/custom}/plugins/$$plugin_name; \
-		if [ -d "$$plugin_dir" ]; then \
-			echo "Updating $$plugin_name..." && \
-			cd "$$plugin_dir" && git pull --rebase; \
-		else \
-			echo "Installing $$plugin_name..." && \
-			git clone $$url "$$plugin_dir"; \
-		fi; \
-	done
-	@echo "Oh My Zsh plugins update complete."
-
-.PHONY: refresh-devbox-config
-refresh-devbox-config:
-	@if [ -f .profile-choice ]; then \
-		PROFILE_CHOICE=$$(cat .profile-choice); \
-		if [ "$$PROFILE_CHOICE" = "main" ]; then \
-			DEVBOX_PROFILE=$(DEVBOX_CONFIG_DIR)/main; \
-		elif [ "$$PROFILE_CHOICE" = "work" ]; then \
-			DEVBOX_PROFILE=$(DEVBOX_CONFIG_DIR)/work; \
-		else \
-			DEVBOX_PROFILE=""; \
-		fi; \
-		if [ -n "$$DEVBOX_PROFILE" ] && [ -d "$$DEVBOX_PROFILE" ]; then \
-			echo "Force refreshing Devbox config from $$DEVBOX_PROFILE..."; \
-			mkdir -p $(DEVBOX_GLOBAL_CONFIG); \
-			rm -f $(DEVBOX_GLOBAL_CONFIG)/devbox.json $(DEVBOX_GLOBAL_CONFIG)/devbox.lock; \
-			ln -sf $$DEVBOX_PROFILE/devbox.json $(DEVBOX_GLOBAL_CONFIG)/devbox.json; \
-			echo "Regenerating devbox.lock (this may take a moment)..."; \
-			cd $(DEVBOX_GLOBAL_CONFIG) && devbox install --refresh 2>/dev/null || devbox install; \
-			eval "$$(devbox global shellenv --preserve-path-stack -r)" && hash -r 2>/dev/null || true; \
-			echo "Devbox config refreshed."; \
-		else \
-			echo "Skipping Devbox refresh. Invalid or missing directory."; \
-		fi; \
-	else \
-		echo "No profile selected. Skipping Devbox config."; \
-	fi
-
 # ============================================
-# CLEAN TARGETS
+# SHELL (Oh My Zsh)
 # ============================================
-
-clean: clean-profile
-
-.PHONY: clean-profile
-clean-profile:
-	@echo "Cleaning up temporary profile-choice file..."
-	@if [ -f .profile-choice ]; then \
-		rm .profile-choice; \
-		echo "Temporary profile-choice file removed."; \
-	else \
-		echo "No temporary profile-choice file found. Skipping cleanup."; \
-	fi
-	@echo "Profile cleanup complete."
-
-.PHONY: print-variables
-print-variables:
-	@echo "=== Configurable (.env) ==="
-	@echo "GIT_USER: $(GIT_USER)"
-	@echo "DEV_SETUP_REPO: $(DEV_SETUP_REPO)"
-	@echo "OBSIDIAN_NOTES_REPO: $(OBSIDIAN_NOTES_REPO)"
-	@echo ""
-	@echo "=== System ==="
-	@echo "SHELL: $(SHELL)"
-	@echo "UNAME_S: $(UNAME_S)"
-	@echo "DOTFILES_DIR: $(DOTFILES_DIR)"
-	@echo "CHEZMOI_DIR: $(CHEZMOI_DIR)"
-	@echo "DEVBOX_GLOBAL_CONFIG: $(DEVBOX_GLOBAL_CONFIG)"
-	@echo "PROFILE_CHOICE: $(PROFILE_CHOICE)"
-
-.PHONY: initialize
-initialize: print-variables
-ifeq ($(UNAME_S), Darwin)
-	@echo "Detected macOS, running pre-setup..."
-	$(MAKE) mac-init
-else ifeq ($(UNAME_S), Linux)
-	@echo "Detected Linux, running pre-setup..."
-	$(MAKE) linux-init
-else
-	@echo "Unsupported OS"
-endif
-
-.PHONY: mac-init
-mac-init: select-profile install-powerline-fonts install-xcode install-homebrew setup-iterm2-shell-integration setup-chezmoi install-devbox install-direnv brew-bundle-default clone-dev-setup setup-claude-config setup-shell setup-tmux setup-brewfile setup-devbox-config setup-notes clean-profile
-
-.PHONY: linux-init
-linux-init: select-profile install-powerline-fonts install-devbox install-direnv clone-dev-setup setup-claude-config setup-shell setup-tmux setup-devbox-config setup-chezmoi setup-notes clean-profile
-	@echo "Setting up for Linux..."
-	# Add additional Linux setup steps here, such as package manager commands.
-
-.PHONY: configure
-configure: select-profile
-	@echo "tbd..."
-
-.PHONY: select-profile
-select-profile: set-profile
-
-.PHONY: set-profile
-set-profile:
-	@echo "Is this setup for (1) Main (Personal) or (2) Work? Enter 1 or 2: "
-	@read CHOICE; \
-	case $$CHOICE in \
-		1) echo "Using Main profile"; PROFILE_CHOICE=main;; \
-		2) echo "Using Work profile"; PROFILE_CHOICE=work;; \
-		*) echo "Invalid choice. Skipping profile-specific setup."; PROFILE_CHOICE=none;; \
-	esac; \
-	echo $$PROFILE_CHOICE > .profile-choice
-
-.PHONY: install-powerline-fonts
-install-powerline-fonts:
-	@echo "Checking for existing Powerline fonts..."
-ifeq ($(UNAME_S), Darwin)
-	@if [ ! "$(shell find ~/Library/Fonts -name '*Powerline*' | head -n 1)" ]; then \
-		echo "No Powerline fonts found. Installing..."; \
-		git clone https://github.com/powerline/fonts.git --depth=1 /tmp/fonts; \
-		cd /tmp/fonts && ./install.sh; \
-		cd .. && rm -rf /tmp/fonts; \
-		echo "Powerline fonts installed successfully."; \
-	else \
-		echo "Powerline fonts already installed on macOS."; \
-	fi
-else ifeq ($(UNAME_S), Linux)
-	@if [ ! "$(shell find ~/.local/share/fonts -name '*Powerline*' | head -n 1)" ]; then \
-		echo "No Powerline fonts found. Installing..."; \
-		git clone https://github.com/powerline/fonts.git --depth=1 /tmp/fonts; \
-		cd /tmp/fonts && ./install.sh; \
-		cd .. && rm -rf /tmp/fonts; \
-		echo "Powerline fonts installed successfully."; \
-	else \
-		echo "Powerline fonts already installed on Linux."; \
-	fi
-endif
-
-.PHONY: install-xcode
-install-xcode:
-	@echo "Checking for Xcode Command Line Tools..."
-	@xcode-select -p > /dev/null 2>&1 || (echo "Installing Xcode Command Line Tools..." && xcode-select --install)
-
-.PHONY: install-homebrew
-install-homebrew:
-	@echo "Checking for Homebrew..."
-	@which brew > /dev/null 2>&1 || (echo "Installing Homebrew..." && /bin/bash -c "$$(curl -fsSL $(HOMEBREW_URL))")
-	@eval "$$(/opt/homebrew/bin/brew shellenv)"
-	@echo "Homebrew installation complete."
-
-.PHONY: setup-iterm2-shell-integration
-setup-iterm2-shell-integration:
-	@echo "Setting up iTerm2 shell integration..."
-	@curl -L https://iterm2.com/shell_integration/zsh -o ~/.iterm2_shell_integration.zsh
-	@echo "iTerm2 shell integration setup complete."
-
-.PHONY: setup-chezmoi
-setup-chezmoi:
-ifeq ($(GIT_USER),)
-	@echo "Error: GIT_USER not set. Please set it in .env file."
-	@exit 1
-else
-	@echo "Configuring chezmoi..."
-	@if [ ! -d "$(CHEZMOI_DIR)" ]; then \
-		echo "Initializing chezmoi for the first time..." && \
-		chezmoi init --apply $(GIT_USER); \
-	else \
-		echo "Chezmoi already initialized. Pulling updates from the repository..." && \
-		chezmoi git pull; \
-	fi
-endif
-	@echo "Copying chezmoi toml config..."
-	@bash -c 'if [ -f .profile-choice ]; then \
-		PROFILE_CHOICE=$$(cat .profile-choice); \
-		if [ "$$PROFILE_CHOICE" = "main" ]; then \
-			CHEZMOI_TOML="$(CONFIGS_DIR)/chezmoi/main.toml"; \
-		elif [ "$$PROFILE_CHOICE" = "work" ]; then \
-			CHEZMOI_TOML="$(CONFIGS_DIR)/chezmoi/work.toml"; \
-		else \
-			CHEZMOI_TOML=""; \
-		fi; \
-		CHEZMOI_ROOT="$(CONFIGS_DIR)/chezmoi/chezmoiroot"; \
-		if [ -n "$$CHEZMOI_TOML" ] && [ -f "$$CHEZMOI_TOML" ]; then \
-			echo "Setting up Chezmoi toml config from $$CHEZMOI_TOML" && \
-			mkdir -p "$(CHEZMOI_CONFIG_DIR)" && \
-			ln -sf "$$CHEZMOI_TOML" "$(CHEZMOI_CONFIG_DIR)/chezmoi.toml" && \
-			ln -sf "$$CHEZMOI_ROOT" "$(CHEZMOI_DIR)/.chezmoiroot" && \
-			echo "Chezmoi toml config linked to $$CHEZMOI_TOML"; \
-		else \
-			echo "Skipping Chezmoi toml config setup. Invalid or missing file."; \
-		fi; \
-	else \
-		echo "No profile selected. Skipping Chezmoi toml config setup."; \
-	fi'
-	@echo "Chezmoi setup complete."
-
-.PHONY: install-devbox
-install-devbox:
-	@echo "Checking for Devbox..."
-	@command -v devbox > /dev/null 2>&1 || (echo "Devbox not found. Installing..." && curl -fsSL $(DEVBOX_INSTALL_SCRIPT) | bash)
-	@echo "Devbox installation complete or already exists."
-
-.PHONY: install-direnv
-install-direnv:
-	@echo "Checking for Direnv..."
-	@command -v direnv > /dev/null 2>&1 || (echo "Direnv not found. Installing..." && curl -fsSL $(DIRENV_INSTALL_SCRIPT) | bash)
-	@echo "Direnv installation complete or already exists."
-
-.PHONY: brew-bundle-default
-brew-bundle-default:
-	@echo "Installing default Brewfile..."
-	@if [ ! -f "$(BREWFILE_DEFAULT)" ]; then \
-		echo "Error: Default Brewfile not found at $(BREWFILE_DEFAULT). Make sure the dotfiles repo is cloned correctly."; \
-		exit 1; \
-	fi
-	@brew bundle --file=$(BREWFILE_DEFAULT)
-
-.PHONY: setup-brewfile
-setup-brewfile:
-	@if [ -f .profile-choice ]; then \
-		PROFILE_CHOICE=$$(cat .profile-choice); \
-		if [ "$$PROFILE_CHOICE" = "main" ]; then \
-			BREWFILE=$(BREW_DIR)/main; \
-		elif [ "$$PROFILE_CHOICE" = "work" ]; then \
-			BREWFILE=$(BREW_DIR)/work; \
-		else \
-			BREWFILE=""; \
-		fi; \
-		if [ -n "$$BREWFILE" ] && [ -f "$$BREWFILE" ]; then \
-			echo "Installing additional Brewfile: $$BREWFILE..."; \
-			brew bundle --file=$$BREWFILE; \
-		elif [ -n "$$BREWFILE" ]; then \
-			echo "Error: Brewfile not found at $$BREWFILE"; \
-			exit 1; \
-		else \
-			echo "No additional Brewfile selected. Skipping."; \
-		fi; \
-	else \
-		echo "No profile selected. Skipping Brewfile setup."; \
-	fi
-
-.PHONY: setup-devbox-config
-setup-devbox-config:
-	@if [ -f .profile-choice ]; then \
-		PROFILE_CHOICE=$$(cat .profile-choice); \
-		if [ "$$PROFILE_CHOICE" = "main" ]; then \
-			DEVBOX_PROFILE=$(DEVBOX_CONFIG_DIR)/main; \
-		elif [ "$$PROFILE_CHOICE" = "work" ]; then \
-			DEVBOX_PROFILE=$(DEVBOX_CONFIG_DIR)/work; \
-		else \
-			DEVBOX_PROFILE=""; \
-		fi; \
-		if [ -n "$$DEVBOX_PROFILE" ] && [ -d "$$DEVBOX_PROFILE" ]; then \
-			echo "Setting up Devbox config from $$DEVBOX_PROFILE..."; \
-			mkdir -p $(DEVBOX_GLOBAL_CONFIG); \
-			rm -f $(DEVBOX_GLOBAL_CONFIG)/devbox.json $(DEVBOX_GLOBAL_CONFIG)/devbox.lock; \
-			ln -s $$DEVBOX_PROFILE/devbox.json $(DEVBOX_GLOBAL_CONFIG)/devbox.json; \
-			ln -s $$DEVBOX_PROFILE/devbox.lock $(DEVBOX_GLOBAL_CONFIG)/devbox.lock; \
-			echo "Devbox config linked to $$DEVBOX_PROFILE"; \
-			eval "$(devbox global shellenv --preserve-path-stack -r)" && hash -r; \
-			echo "Devbox config refreshed."; \
-		else \
-			echo "Skipping Devbox config setup. Invalid or missing directory."; \
-		fi; \
-	else \
-		echo "No profile selected. Skipping Devbox config setup."; \
-	fi
-
-.PHONY: setup-claude-config
-setup-claude-config:
-	@echo "Setting up Claude Code configuration..."
-	@mkdir -p $(CLAUDE_CONFIG_DIR)
-	@if [ "$(PROFILE)" = "main" ]; then \
-		CLAUDE_SRC="$(DEV_SETUP_CLAUDE_DIR)/claude_settings_local_main.json"; \
-	elif [ "$(PROFILE)" = "work" ]; then \
-		CLAUDE_SRC="$(DEV_SETUP_CLAUDE_DIR)/claude_settings_local_work.json"; \
-	else \
-		echo "Warning: PROFILE not set to 'main' or 'work' in .env. Skipping Claude config."; \
-		exit 0; \
-	fi; \
-	if [ -f "$$CLAUDE_SRC" ]; then \
-		echo "Linking Claude settings from $$CLAUDE_SRC..."; \
-		ln -sf "$$CLAUDE_SRC" "$(CLAUDE_CONFIG_DIR)/settings.json"; \
-		ln -sf "$$CLAUDE_SRC" "$(CLAUDE_CONFIG_DIR)/settings.local.json"; \
-	else \
-		echo "Warning: $$CLAUDE_SRC not found. Skipping Claude settings."; \
-	fi
-	@# Symlink custom agents and commands into ~/.claude/ (native discovery)
-	@echo "Setting up custom agents and commands..."
-	@mkdir -p "$(CLAUDE_CONFIG_DIR)/agents" "$(CLAUDE_CONFIG_DIR)/commands"; \
-	rm -f "$(CLAUDE_CONFIG_DIR)/agents/"*.md "$(CLAUDE_CONFIG_DIR)/commands/"*.md; \
-	GLOBAL_AGENTS="$(CHEZMOI_DIR)/claude/agents"; \
-	SHARED_AGENTS="$(DEV_SETUP_CLAUDE_DIR)/agents"; \
-	GLOBAL_COMMANDS="$(CHEZMOI_DIR)/claude/commands"; \
-	SHARED_COMMANDS="$(DEV_SETUP_CLAUDE_DIR)/commands"; \
-	if [ "$(PROFILE)" = "main" ]; then \
-		PROFILE_AGENTS="$(DEV_SETUP_CLAUDE_DIR)/agents_main"; \
-		PROFILE_COMMANDS="$(DEV_SETUP_CLAUDE_DIR)/commands_main"; \
-	elif [ "$(PROFILE)" = "work" ]; then \
-		PROFILE_AGENTS="$(DEV_SETUP_CLAUDE_DIR)/agents_work"; \
-		PROFILE_COMMANDS="$(DEV_SETUP_CLAUDE_DIR)/commands_work"; \
-	else \
-		PROFILE_AGENTS=""; \
-		PROFILE_COMMANDS=""; \
-	fi; \
-	for dir in "$$GLOBAL_AGENTS" "$$SHARED_AGENTS" "$$PROFILE_AGENTS"; do \
-		if [ -n "$$dir" ] && [ -d "$$dir" ]; then \
-			for f in "$$dir"/*.md; do \
-				[ -f "$$f" ] && ln -sf "$$f" "$(CLAUDE_CONFIG_DIR)/agents/$$(basename $$f)"; \
-			done; \
-		fi; \
-	done; \
-	for dir in "$$GLOBAL_COMMANDS" "$$SHARED_COMMANDS" "$$PROFILE_COMMANDS"; do \
-		if [ -n "$$dir" ] && [ -d "$$dir" ]; then \
-			for f in "$$dir"/*.md; do \
-				[ -f "$$f" ] && ln -sf "$$f" "$(CLAUDE_CONFIG_DIR)/commands/$$(basename $$f)"; \
-			done; \
-		fi; \
-	done; \
-	echo "Custom agents/commands setup complete."
-	@echo "Claude config setup complete."
-
-.PHONY: setup-macos-defaults
-setup-macos-defaults:
-	@echo "Applying macOS defaults..."
-	@if [ "$(UNAME_S)" = "Darwin" ]; then \
-		chmod +x $(DOTFILES_DIR)/macos/defaults.sh && \
-		$(DOTFILES_DIR)/macos/defaults.sh; \
-	else \
-		echo "Skipping macOS defaults (not on macOS)"; \
-	fi
-
-.PHONY: select-ide
-select-ide:
-	@echo "Select your preferred IDE:"
-	@echo "  1) VS Code"
-	@echo "  2) Cursor"
-	@echo "  3) Zed"
-	@echo "  4) Sublime Text"
-	@read -p "Enter choice [1-4]: " choice; \
-	mkdir -p $(HOME)/.config/dotfiles; \
-	case $$choice in \
-		1) echo "vscode" > $(HOME)/.config/dotfiles/ide ;; \
-		2) echo "cursor" > $(HOME)/.config/dotfiles/ide ;; \
-		3) echo "zed" > $(HOME)/.config/dotfiles/ide ;; \
-		4) echo "sublime" > $(HOME)/.config/dotfiles/ide ;; \
-		*) echo "Invalid choice" ;; \
-	esac
-	@echo "IDE preference saved. Open new terminal to apply."
-
-.PHONY: setup-zed-config
-setup-zed-config:
-	@echo "Setting up Zed IDE configuration..."
-	@mkdir -p $(HOME)/.config/zed
-	@# Profile-specific settings are symlinked by .zshrc based on hostname
-	@echo "Zed config directory created. Settings will be symlinked on shell startup."
-
-# for sensitive zsh aliases, functions, etc.
-.PHONY: clone-dev-setup
-clone-dev-setup:
-ifeq ($(DEV_SETUP_REPO),)
-	@echo "DEV_SETUP_REPO not set in .env, skipping dev_setup clone."
-else
-	@echo "Cloning dev_setup repository..."
-	@REPO_NAME=$$(basename $(DEV_SETUP_REPO) .git); \
-	if [ ! -d $(HOME)/$$REPO_NAME ]; then \
-		echo "Cloning dev_setup repository..."; \
-		git clone $(DEV_SETUP_REPO) $(HOME)/$$REPO_NAME; \
-		echo "dev_setup repo complete."; \
-	else \
-		echo "dev_setup repository already cloned."; \
-	fi
-endif
 
 .PHONY: setup-shell
 setup-shell: setup-zsh
-	@echo "Setting up Zsh..."
-	@echo "Checking for Zsh..."
 ifeq ($(UNAME_S), Darwin)
-	@command -v zsh > /dev/null 2>&1 || (echo "Zsh not found. Installing..." && brew install zsh)
+	@command -v zsh > /dev/null 2>&1 || (echo "Installing zsh..." && brew install zsh)
 else ifeq ($(UNAME_S), Linux)
-	@command -v zsh > /dev/null 2>&1 || (echo "Zsh not found. Installing..." && apt install zsh)
+	@command -v zsh > /dev/null 2>&1 || (echo "Installing zsh..." && apt install zsh)
 endif
-	@command -v chsh -s $(which zsh)
-	@echo "Shell setup complete. Using Zsh as the default shell."
+	@chsh -s $$(which zsh) 2>/dev/null || true
+	@echo "Shell setup complete."
 
 .PHONY: setup-zsh
 setup-zsh: install-oh-my-zsh-plugins
-	@echo "Checking for Oh My Zsh installation..."
 	@if [ ! -d $(HOME)/.oh-my-zsh ]; then \
-		echo "Oh My Zsh not found. Installing..."; \
+		echo "Installing Oh My Zsh..." && \
 		sh -c "$$(curl -fsSL $(OH_MY_ZSH_INSTALL_SCRIPT))"; \
-		echo "Oh My Zsh installation complete."; \
 	else \
 		echo "Oh My Zsh already installed."; \
 	fi
@@ -521,69 +279,315 @@ install-oh-my-zsh-plugins:
 	@echo "Installing Oh My Zsh plugins..."
 	@for url in $(ZSH_PLUGIN_URLS); do \
 		plugin_name=$$(basename $$url .git); \
-		if [ ! -d $${ZSH_CUSTOM:-$(HOME)/.oh-my-zsh/custom}/plugins/$$plugin_name ]; then \
-			echo "Installing $$plugin_name..."; \
-			git clone $$url $${ZSH_CUSTOM:-$(HOME)/.oh-my-zsh/custom}/plugins/$$plugin_name; \
+		plugin_dir=$${ZSH_CUSTOM:-$(HOME)/.oh-my-zsh/custom}/plugins/$$plugin_name; \
+		if [ ! -d "$$plugin_dir" ]; then \
+			echo "Installing $$plugin_name..." && git clone $$url "$$plugin_dir"; \
 		else \
 			echo "$$plugin_name already installed."; \
 		fi; \
 	done
-	@echo "Oh My Zsh plugins installation complete."
+
+.PHONY: update-oh-my-zsh-plugins
+update-oh-my-zsh-plugins:
+	@echo "Updating Oh My Zsh plugins..."
+	@for url in $(ZSH_PLUGIN_URLS); do \
+		plugin_name=$$(basename $$url .git); \
+		plugin_dir=$${ZSH_CUSTOM:-$(HOME)/.oh-my-zsh/custom}/plugins/$$plugin_name; \
+		if [ -d "$$plugin_dir" ]; then \
+			echo "Updating $$plugin_name..." && cd "$$plugin_dir" && git pull --rebase; \
+		else \
+			echo "Installing $$plugin_name..." && git clone $$url "$$plugin_dir"; \
+		fi; \
+	done
+
+# ============================================
+# TMUX
+# ============================================
 
 .PHONY: setup-tmux
 setup-tmux:
 	@echo "Setting up TPM (Tmux Plugin Manager)..."
 	@if [ ! -d "$(TPM_DIR)" ]; then \
-		echo "Cloning TPM..." && \
-		git clone $(TPM_REPO) $(TPM_DIR) && \
-		echo "TPM installed. Run prefix + I inside tmux to install plugins."; \
+		echo "Cloning TPM..." && git clone $(TPM_REPO) $(TPM_DIR); \
 	else \
 		echo "TPM already installed."; \
+	fi
+	@echo "Installing tmux plugins..."
+	@if [ -x "$(TPM_DIR)/bin/install_plugins" ]; then \
+		tmux start-server \; set-environment -g TMUX_PLUGIN_MANAGER_PATH "$(HOME)/.tmux/plugins" \; source-file "$(HOME)/.tmux.conf" 2>/dev/null || true; \
+		$(TPM_DIR)/bin/install_plugins; \
+		echo "Tmux plugins installed."; \
+	else \
+		echo "TPM install script not found, skipping."; \
 	fi
 
 .PHONY: update-tmux-plugins
 update-tmux-plugins:
 	@echo "Updating tmux plugins..."
-	@if [ -x "$(TPM_DIR)/bin/update_plugins" ]; then \
-		$(TPM_DIR)/bin/update_plugins all; \
+	@if [ ! -x "$(TPM_DIR)/bin/update_plugins" ]; then \
+		echo "TPM not installed. Run 'make setup-tmux' first." && exit 1; \
+	fi
+	@tmux start-server \; set-environment -g TMUX_PLUGIN_MANAGER_PATH "$(HOME)/.tmux/plugins" \; source-file "$(HOME)/.tmux.conf" 2>/dev/null || true
+	@$(TPM_DIR)/bin/install_plugins
+	@$(TPM_DIR)/bin/update_plugins all
+
+# ============================================
+# HOMEBREW (macOS only)
+# ============================================
+
+.PHONY: install-homebrew
+install-homebrew:
+ifeq ($(UNAME_S), Darwin)
+	@which brew > /dev/null 2>&1 || (echo "Installing Homebrew..." && /bin/bash -c "$$(curl -fsSL $(HOMEBREW_URL))")
+	@eval "$$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null || true
+	@echo "Homebrew ready."
+else
+	@echo "Skipping Homebrew (not macOS)."
+endif
+
+.PHONY: brew-bundle-default
+brew-bundle-default:
+ifeq ($(UNAME_S), Darwin)
+	@if [ ! -f "$(BREWFILE_DEFAULT)" ]; then \
+		echo "Error: $(BREWFILE_DEFAULT) not found." && exit 1; \
+	fi
+	@echo "Running Brewfile (default)..."
+	@brew bundle --file=$(BREWFILE_DEFAULT)
+else
+	@echo "Skipping Brewfile (not macOS)."
+endif
+
+.PHONY: setup-brewfile
+setup-brewfile:
+ifeq ($(UNAME_S), Darwin)
+	@if [ -f "$(BREWFILE_PROFILE)" ]; then \
+		echo "Running Brewfile ($(PROFILE))..." && brew bundle --file=$(BREWFILE_PROFILE); \
 	else \
-		echo "TPM not installed. Run 'make setup-tmux' first."; \
+		echo "No profile Brewfile at $(BREWFILE_PROFILE), skipping."; \
+	fi
+else
+	@echo "Skipping profile Brewfile (not macOS)."
+endif
+
+# ============================================
+# DEVBOX
+# ============================================
+
+.PHONY: install-devbox
+install-devbox:
+	@command -v devbox > /dev/null 2>&1 || (echo "Installing Devbox..." && curl -fsSL $(DEVBOX_INSTALL_SCRIPT) | bash)
+	@echo "Devbox ready."
+
+.PHONY: install-direnv
+install-direnv:
+	@command -v direnv > /dev/null 2>&1 || (echo "Installing Direnv..." && curl -fsSL $(DIRENV_INSTALL_SCRIPT) | bash)
+	@echo "Direnv ready."
+
+.PHONY: setup-devbox-config
+setup-devbox-config:
+	@if [ -d "$(DEVBOX_PROFILE_DIR)" ]; then \
+		echo "Setting up Devbox config for profile '$(PROFILE)'..." && \
+		mkdir -p $(DEVBOX_GLOBAL_CONFIG) && \
+		rm -f $(DEVBOX_GLOBAL_CONFIG)/devbox.json $(DEVBOX_GLOBAL_CONFIG)/devbox.lock && \
+		ln -sf $(DEVBOX_PROFILE_DIR)/devbox.json $(DEVBOX_GLOBAL_CONFIG)/devbox.json && \
+		ln -sf $(DEVBOX_PROFILE_DIR)/devbox.lock $(DEVBOX_GLOBAL_CONFIG)/devbox.lock && \
+		echo "Devbox config linked."; \
+	else \
+		echo "No Devbox profile dir at $(DEVBOX_PROFILE_DIR), skipping."; \
 	fi
 
-.PHONY: setup-notes
-setup-notes:
-ifeq ($(OBSIDIAN_NOTES_REPO),)
-	@echo "OBSIDIAN_NOTES_REPO not set in .env, skipping notes clone."
-else
-	@echo "Setting up Obsidian notes..."
-	@REPO_NAME=$$(basename $(OBSIDIAN_NOTES_REPO) .git); \
-	if [ ! -d $(HOME)/$$REPO_NAME ]; then \
-		echo "Cloning Obsidian notes repository..."; \
-		git clone $(OBSIDIAN_NOTES_REPO) $(HOME)/$$REPO_NAME; \
-		echo "Obsidian notes setup complete."; \
+.PHONY: refresh-devbox-config
+refresh-devbox-config:
+	@if [ -d "$(DEVBOX_PROFILE_DIR)" ]; then \
+		echo "Refreshing Devbox config..." && \
+		mkdir -p $(DEVBOX_GLOBAL_CONFIG) && \
+		rm -f $(DEVBOX_GLOBAL_CONFIG)/devbox.json $(DEVBOX_GLOBAL_CONFIG)/devbox.lock && \
+		ln -sf $(DEVBOX_PROFILE_DIR)/devbox.json $(DEVBOX_GLOBAL_CONFIG)/devbox.json && \
+		echo "Regenerating devbox.lock..." && \
+		cd $(DEVBOX_GLOBAL_CONFIG) && devbox install --refresh 2>/dev/null || devbox install && \
+		eval "$$(devbox global shellenv --preserve-path-stack -r)" && hash -r 2>/dev/null || true && \
+		echo "Devbox config refreshed."; \
 	else \
-		echo "Obsidian notes repository already cloned."; \
+		echo "No Devbox profile dir at $(DEVBOX_PROFILE_DIR), skipping."; \
+	fi
+
+# ============================================
+# CLAUDE
+# ============================================
+
+.PHONY: setup-claude-config
+setup-claude-config:
+	@echo "Setting up Claude Code configuration..."
+	@mkdir -p $(CLAUDE_CONFIG_DIR)
+	@# Link settings if dev_setup is available
+	@if [ -n "$(DEV_SETUP_REPO)" ] && [ -d "$(DEV_SETUP_CLAUDE_DIR)" ]; then \
+		CLAUDE_SRC="$(DEV_SETUP_CLAUDE_DIR)/claude_settings_local_$(PROFILE).json"; \
+		if [ -f "$$CLAUDE_SRC" ]; then \
+			echo "Linking Claude settings from $$CLAUDE_SRC..." && \
+			ln -sf "$$CLAUDE_SRC" "$(CLAUDE_CONFIG_DIR)/settings.json" && \
+			ln -sf "$$CLAUDE_SRC" "$(CLAUDE_CONFIG_DIR)/settings.local.json"; \
+		else \
+			echo "Warning: $$CLAUDE_SRC not found, skipping settings link."; \
+		fi; \
+	else \
+		echo "dev_setup not available, skipping Claude settings link."; \
+	fi
+	@# Symlink agents and commands
+	@echo "Setting up custom agents and commands..."
+	@mkdir -p "$(CLAUDE_CONFIG_DIR)/agents" "$(CLAUDE_CONFIG_DIR)/commands"
+	@rm -f "$(CLAUDE_CONFIG_DIR)/agents/"*.md "$(CLAUDE_CONFIG_DIR)/commands/"*.md
+	@for dir in \
+		"$(CHEZMOI_DIR)/claude/agents" \
+		"$(DEV_SETUP_CLAUDE_DIR)/agents" \
+		"$(DEV_SETUP_CLAUDE_DIR)/agents_$(PROFILE)"; do \
+		if [ -d "$$dir" ]; then \
+			for f in "$$dir"/*.md; do \
+				[ -f "$$f" ] && ln -sf "$$f" "$(CLAUDE_CONFIG_DIR)/agents/$$(basename $$f)"; \
+			done; \
+		fi; \
+	done
+	@for dir in \
+		"$(CHEZMOI_DIR)/claude/commands" \
+		"$(DEV_SETUP_CLAUDE_DIR)/commands" \
+		"$(DEV_SETUP_CLAUDE_DIR)/commands_$(PROFILE)"; do \
+		if [ -d "$$dir" ]; then \
+			for f in "$$dir"/*.md; do \
+				[ -f "$$f" ] && ln -sf "$$f" "$(CLAUDE_CONFIG_DIR)/commands/$$(basename $$f)"; \
+			done; \
+		fi; \
+	done
+	@echo "Claude config setup complete."
+
+# ============================================
+# SYSTEM TOOLS
+# ============================================
+
+.PHONY: install-xcode
+install-xcode:
+ifeq ($(UNAME_S), Darwin)
+	@xcode-select -p > /dev/null 2>&1 || (echo "Installing Xcode Command Line Tools..." && xcode-select --install)
+	@echo "Xcode Command Line Tools ready."
+else
+	@echo "Skipping Xcode (not macOS)."
+endif
+
+.PHONY: install-powerline-fonts
+install-powerline-fonts:
+ifeq ($(UNAME_S), Darwin)
+	@if [ ! "$$(find ~/Library/Fonts -name '*Powerline*' 2>/dev/null | head -1)" ]; then \
+		echo "Installing Powerline fonts..." && \
+		git clone https://github.com/powerline/fonts.git --depth=1 /tmp/pl-fonts && \
+		/tmp/pl-fonts/install.sh && \
+		rm -rf /tmp/pl-fonts; \
+	else \
+		echo "Powerline fonts already installed."; \
+	fi
+else ifeq ($(UNAME_S), Linux)
+	@if [ ! "$$(find ~/.local/share/fonts -name '*Powerline*' 2>/dev/null | head -1)" ]; then \
+		echo "Installing Powerline fonts..." && \
+		git clone https://github.com/powerline/fonts.git --depth=1 /tmp/pl-fonts && \
+		/tmp/pl-fonts/install.sh && \
+		rm -rf /tmp/pl-fonts; \
+	else \
+		echo "Powerline fonts already installed."; \
 	fi
 endif
 
+.PHONY: setup-iterm2-shell-integration
+setup-iterm2-shell-integration:
+ifeq ($(UNAME_S), Darwin)
+	@if [ ! -f ~/.iterm2_shell_integration.zsh ]; then \
+		echo "Installing iTerm2 shell integration..." && \
+		curl -L https://iterm2.com/shell_integration/zsh -o ~/.iterm2_shell_integration.zsh; \
+	else \
+		echo "iTerm2 shell integration already installed."; \
+	fi
+else
+	@echo "Skipping iTerm2 integration (not macOS)."
+endif
+
+# ============================================
+# macOS DEFAULTS
+# ============================================
+
+.PHONY: setup-macos-defaults
+setup-macos-defaults:
+ifeq ($(UNAME_S), Darwin)
+	@echo "Applying macOS defaults..."
+	@chmod +x $(DOTFILES_DIR)/macos/defaults.sh && $(DOTFILES_DIR)/macos/defaults.sh
+else
+	@echo "Skipping macOS defaults (not macOS)."
+endif
+
+# ============================================
+# IDE / ZED
+# ============================================
+
+.PHONY: select-ide
+select-ide:
+	@echo "Select your preferred IDE:"
+	@echo "  1) VS Code  2) Cursor  3) Zed  4) Sublime Text"
+	@read -p "Enter choice [1-4]: " choice; \
+	mkdir -p $(HOME)/.config/dotfiles; \
+	case $$choice in \
+		1) echo "vscode"   > $(HOME)/.config/dotfiles/ide ;; \
+		2) echo "cursor"   > $(HOME)/.config/dotfiles/ide ;; \
+		3) echo "zed"      > $(HOME)/.config/dotfiles/ide ;; \
+		4) echo "sublime"  > $(HOME)/.config/dotfiles/ide ;; \
+		*) echo "Invalid choice" ;; \
+	esac
+	@echo "IDE preference saved."
+
+.PHONY: setup-zed-config
+setup-zed-config:
+	@mkdir -p $(HOME)/.config/zed
+	@echo "Zed config directory ready."
+
+# ============================================
+# UTILITIES
+# ============================================
+
+.PHONY: print-variables
+print-variables:
+	@echo "=== .env ==="
+	@echo "  PROFILE:              $(PROFILE)"
+	@echo "  GIT_USER:             $(GIT_USER)"
+	@echo "  DEV_SETUP_REPO:       $(if $(DEV_SETUP_REPO),$(DEV_SETUP_REPO),(not set - skipped))"
+	@echo "  OBSIDIAN_NOTES_REPO:  $(if $(OBSIDIAN_NOTES_REPO),$(OBSIDIAN_NOTES_REPO),(not set - skipped))"
+	@echo "=== System ==="
+	@echo "  OS:     $(UNAME_S)"
+	@echo "  SHELL:  $(SHELL)"
+	@echo ""
+
+.PHONY: clean
+clean:
+	@echo "Nothing to clean."
+
 .PHONY: help
 help:
-	@echo "Makefile for dotfiles setup"
+	@echo "Usage: make [target]"
 	@echo ""
-	@echo "Targets:"
-	@echo "  initialize          First-time setup - installs all tools and configures environment"
-	@echo "  update              Safe update - pulls latest changes and applies idempotently"
-	@echo "  update-chezmoi      Pull and apply chezmoi changes only"
-	@echo "  update-repos        Pull dev_setup and notes repositories"
-	@echo "  update-oh-my-zsh-plugins  Update all oh-my-zsh plugins"
-	@echo "  setup-claude-config Symlink Claude Code settings + setup custom agents/commands plugin"
-	@echo "  setup-macos-defaults      Apply macOS system preferences (Finder, Dock, keyboard)"
-	@echo "  setup-zed-config    Setup Zed IDE configuration directory"
-	@echo "  select-ide          Choose default IDE (VS Code, Cursor, Zed, Sublime)"
-	@echo "  setup-tmux                Install TPM (Tmux Plugin Manager)"
-	@echo "  update-tmux-plugins       Update all tmux plugins via TPM"
-	@echo "  refresh-devbox-config     Force regenerate devbox lock and reinstall"
-	@echo "  configure           Other setup steps (tbd)"
-	@echo "  print-variables     Print Makefile variables"
-	@echo "  clean               Clean up temporary files"
-	@echo "  help                Display this help message"
+	@echo "First, copy and configure your environment:"
+	@echo "  cp .env.example .env   # then edit .env with your values"
+	@echo ""
+	@echo "Primary targets:"
+	@echo "  setup                  Full idempotent setup (default)"
+	@echo "  update                 Pull latest changes and re-apply"
+	@echo ""
+	@echo "Individual targets:"
+	@echo "  setup-chezmoi          Init/update chezmoi dotfiles"
+	@echo "  setup-tmux             Install TPM and all tmux plugins"
+	@echo "  update-tmux-plugins    Update all tmux plugins"
+	@echo "  setup-claude-config    Link Claude settings + agents/commands"
+	@echo "  setup-devbox-config    Link profile Devbox config"
+	@echo "  refresh-devbox-config  Force-regenerate devbox.lock"
+	@echo "  brew-bundle-default    Install default Brewfile"
+	@echo "  setup-brewfile         Install profile Brewfile"
+	@echo "  setup-macos-defaults   Apply macOS system preferences"
+	@echo "  setup-shell            Install/configure Zsh + Oh My Zsh"
+	@echo "  setup-notes            Clone Obsidian notes repo"
+	@echo "  clone-dev-setup        Clone private dev_setup repo"
+	@echo "  select-ide             Choose default IDE"
+	@echo "  print-variables        Show resolved config values"
+	@echo "  check-env              Validate .env is configured correctly"
+	@echo "  help                   Show this message"
