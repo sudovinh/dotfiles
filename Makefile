@@ -107,6 +107,9 @@ linux-update: \
 # UTILITIES
 # ============================================
 
+.PHONY: all
+all: setup
+
 .PHONY: clean
 clean:
 	@echo "Nothing to clean."
