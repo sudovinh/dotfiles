@@ -19,6 +19,21 @@ setup-claude-config:
 	else \
 		echo "dev_setup not available, skipping Claude settings link."; \
 	fi
+	@# Merge MCP servers from profile config into ~/.claude.json
+	@if [ -n "$(DEV_SETUP_REPO)" ] && [ -d "$(DEV_SETUP_CLAUDE_DIR)" ]; then \
+		MCP_SRC="$(DEV_SETUP_CLAUDE_DIR)/claude_mcp_$(PROFILE).json"; \
+		CLAUDE_USER_CFG="$(HOME)/.claude.json"; \
+		if [ -f "$$MCP_SRC" ] && [ -f "$$CLAUDE_USER_CFG" ] && command -v jq >/dev/null 2>&1; then \
+			echo "Merging MCP servers from $$MCP_SRC into $$CLAUDE_USER_CFG..." && \
+			jq -s '.[0].mcpServers = (.[0].mcpServers // {} ) * .[1].mcpServers | .[0]' \
+				"$$CLAUDE_USER_CFG" "$$MCP_SRC" > "$$CLAUDE_USER_CFG.tmp" && \
+			mv "$$CLAUDE_USER_CFG.tmp" "$$CLAUDE_USER_CFG"; \
+		elif [ -f "$$MCP_SRC" ] && ! command -v jq >/dev/null 2>&1; then \
+			echo "Warning: jq not found, skipping MCP server merge."; \
+		else \
+			echo "Warning: $$MCP_SRC or $$CLAUDE_USER_CFG not found, skipping MCP server merge."; \
+		fi; \
+	fi
 	@# Symlink agents and commands
 	@echo "Setting up custom agents and commands..."
 	@mkdir -p "$(CLAUDE_CONFIG_DIR)/agents" "$(CLAUDE_CONFIG_DIR)/commands"
