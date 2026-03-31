@@ -42,9 +42,9 @@ setup-claude-config:
 		"$(CHEZMOI_DIR)/claude/agents" \
 		"$(DEV_SETUP_CLAUDE_DIR)/agents" \
 		"$(DEV_SETUP_CLAUDE_DIR)/agents_$(PROFILE)"; do \
-		if [ -d "$$dir" ]; then \
+		if [ -d "$$dir" ] && ls "$$dir"/*.md >/dev/null 2>&1; then \
 			for f in "$$dir"/*.md; do \
-				[ -f "$$f" ] && ln -sf "$$f" "$(CLAUDE_CONFIG_DIR)/agents/$$(basename $$f)"; \
+				ln -sf "$$f" "$(CLAUDE_CONFIG_DIR)/agents/$$(basename $$f)"; \
 			done; \
 		fi; \
 	done
@@ -52,9 +52,9 @@ setup-claude-config:
 		"$(CHEZMOI_DIR)/claude/commands" \
 		"$(DEV_SETUP_CLAUDE_DIR)/commands" \
 		"$(DEV_SETUP_CLAUDE_DIR)/commands_$(PROFILE)"; do \
-		if [ -d "$$dir" ]; then \
+		if [ -d "$$dir" ] && ls "$$dir"/*.md >/dev/null 2>&1; then \
 			for f in "$$dir"/*.md; do \
-				[ -f "$$f" ] && ln -sf "$$f" "$(CLAUDE_CONFIG_DIR)/commands/$$(basename $$f)"; \
+				ln -sf "$$f" "$(CLAUDE_CONFIG_DIR)/commands/$$(basename $$f)"; \
 			done; \
 		fi; \
 	done
