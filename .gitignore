@@ -1,3 +1,4 @@
 .chezmoiroot
 .env
 .claude/
+.worktrees/
