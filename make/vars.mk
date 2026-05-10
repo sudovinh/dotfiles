@@ -12,11 +12,11 @@ OBSIDIAN_NOTES_REPO   ?=
 # ============================================
 # FIXED VARIABLES
 # ============================================
-DOTFILES_DIR    := $(HOME)/dotfiles
+CHEZMOI_DIR     := $(HOME)/.local/share/chezmoi
+DOTFILES_DIR    := $(CHEZMOI_DIR)
 BREW_DIR        := $(DOTFILES_DIR)/brew
 BREWFILE_DEFAULT := $(BREW_DIR)/default
 CHEZMOI_CONFIG_DIR := $(HOME)/.config/chezmoi
-CHEZMOI_DIR     := $(HOME)/.local/share/chezmoi
 CONFIGS_DIR     := $(DOTFILES_DIR)/configs
 DIRENV_INSTALL_SCRIPT := https://direnv.net/install.sh
 FLOX_INSTALL_SCRIPT   := https://install.flox.dev
