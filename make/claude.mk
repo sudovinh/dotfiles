@@ -27,7 +27,7 @@ setup-claude-config:
 			STRIPPED=$$(sed 's|^\s*//.*||' "$$MCP_SRC"); \
 			if echo "$$STRIPPED" | jq empty >/dev/null 2>&1; then \
 				echo "Merging MCP servers from $$MCP_SRC into $$CLAUDE_USER_CFG..." && \
-				echo "$$STRIPPED" | jq -s '.[0].mcpServers = (.[0].mcpServers // {} ) * .[1].mcpServers | .[0]' \
+				echo "$$STRIPPED" | jq -s '.[0].mcpServers = (.[0].mcpServers // {}) * (.[1].mcpServers // {}) | .[0]' \
 					"$$CLAUDE_USER_CFG" - > "$$CLAUDE_USER_CFG.tmp" && \
 				mv "$$CLAUDE_USER_CFG.tmp" "$$CLAUDE_USER_CFG"; \
 			else \
