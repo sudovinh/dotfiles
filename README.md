@@ -1,287 +1,208 @@
 # Dotfiles
 
-Automated macOS/Linux environment configuration using Chezmoi, Devbox, and Homebrew. Designed to be idempotent with profile-based configurations.
+Idempotent macOS/Linux environment setup. Run `make` once to set up a new machine, run it again anytime to re-apply — it's always safe.
+
+Managed with [Chezmoi](https://chezmoi.io) (dotfiles), [Flox](https://flox.dev) (packages), and [Homebrew](https://brew.sh) (apps).
+
+---
 
 ## Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/dotfiles.git ~/dotfiles
-cd ~/dotfiles
+# 1. Clone
+git clone git@github.com:sudovinh/dotfiles.git ~/.local/share/chezmoi
+cd ~/.local/share/chezmoi
 
-# Configure your settings
+# 2. Configure
 cp .env.example .env
-# Edit .env with your GitHub username and optional repos
+# Edit .env — set GIT_USER and PROFILE at minimum
 
-# Run first-time setup
-make initialize
+# 3. Run
+make
 ```
+
+That's it. Re-running `make` at any time is safe and idempotent.
+
+---
 
 ## Configuration
 
-Copy `.env.example` to `.env` and customize:
+Copy `.env.example` to `.env` and fill in your values:
 
 ```bash
-# Required - your GitHub username for chezmoi
+# Required
 GIT_USER=your-github-username
+PROFILE=main                          # main | work
 
-# Optional - private repo for sensitive configs (leave empty to skip)
-DEV_SETUP_REPO=git@github.com:your-username/dev_setup.git
-
-# Optional - Obsidian notes repository (leave empty to skip)
-OBSIDIAN_NOTES_REPO=git@github.com:your-username/second-brain.git
+# Optional — leave commented out to skip
+# DEV_SETUP_REPO=git@github.com:you/dev_setup.git
+# OBSIDIAN_NOTES_REPO=git@github.com:you/second-brain.git
 ```
+
+### Profiles
+
+| Profile | Use Case |
+|---------|----------|
+| `main`  | Personal machine |
+| `work`  | Work machine (extra devops tools, work-specific configs) |
+
+The profile controls which Brewfile, Flox environment, and Claude settings are applied.
+
+---
+
+## What Gets Set Up
+
+### Homebrew
+Installs apps and CLI tools from two Brewfiles:
+- `brew/default` — installed on every machine
+- `brew/<profile>` — profile-specific additions
+
+### Chezmoi (Dotfiles)
+Manages your dotfiles via templates rendered per-machine:
+- `~/.zshrc` — Zsh config with flox activation, direnv, Oh My Zsh
+- `~/.tmux.conf` — Tmux config
+- `~/.gitconfig` — Git config with hostname-based identity
+- `~/.config/zed/settings.json` — Zed IDE settings
+- `~/.local/bin/git-clone-bare-for-worktrees` — worktree bootstrap script
+
+### Flox (Package Manager)
+Nix-based reproducible package environments, version-controlled alongside your dotfiles:
+- `flox/main/` — personal profile packages (go, kubectl, k9s, gh, jq, …)
+- `flox/work/` — work profile packages (extends main + argocd, colima, ripgrep, …)
+
+Activated automatically in your shell via `flox activate --dir`. Add packages by editing the manifest and running `make refresh-flox-config`.
+
+### Shell
+- Oh My Zsh + plugins (zsh-autosuggestions, zsh-syntax-highlighting)
+- Direnv for per-directory environment variables
+- Flox environment activated on shell start
+
+### Tmux
+- TPM (Tmux Plugin Manager) with plugins: tmux-sensible, tmux-resurrect
+- Prefix: `Ctrl-a`
+- Splits: `prefix + |` (horizontal) / `prefix + -` (vertical)
+- Navigation: `prefix + h/j/k/l`
+
+### Claude Code
+Links settings and MCP server configs from `dev_setup` (if configured). Safe no-op if `DEV_SETUP_REPO` is not set.
+
+### macOS Defaults
+Applies sensible system preferences (Finder, Dock, keyboard, screenshots). Override any setting in `.env`:
+```bash
+MACOS_DOCK_AUTOHIDE=true
+MACOS_DOCK_ICON_SIZE=48
+MACOS_FINDER_SHOW_HIDDEN=true
+```
+
+---
 
 ## Make Targets
 
-| Command | Description |
-|---------|-------------|
-| `make initialize` | First-time setup - installs all tools and configures environment |
-| `make update` | Safe idempotent update - pulls changes and applies them |
-| `make update-chezmoi` | Pull and apply chezmoi changes only |
-| `make update-repos` | Pull dev_setup and notes repositories |
-| `make update-oh-my-zsh-plugins` | Update all oh-my-zsh plugins |
-| `make setup-claude-config` | Symlink Claude Code settings |
-| `make setup-tmux` | Install TPM (Tmux Plugin Manager) |
-| `make update-tmux-plugins` | Update all tmux plugins via TPM |
-| `make setup-macos-defaults` | Apply macOS system preferences (Finder, Dock, keyboard) |
-| `make setup-zed-config` | Setup Zed IDE configuration directory |
-| `make select-ide` | Choose default IDE (VS Code, Cursor, Zed, Sublime) |
-| `make refresh-devbox-config` | Force regenerate devbox lock and reinstall |
-| `make print-variables` | Show current configuration |
-| `make help` | Display available targets |
+```
+make                       Full idempotent setup (default)
+make update                Pull latest + re-apply everything
+
+make setup-chezmoi         Init/update chezmoi dotfiles
+make setup-shell           Install Zsh + Oh My Zsh
+make setup-tmux            Install TPM and tmux plugins
+make setup-flox-config     Verify flox environment for active profile
+make refresh-flox-config   Update flox packages
+make brew-bundle-default   Install default Brewfile
+make brew-bundle-profile   Install profile Brewfile
+make setup-claude-config   Link Claude settings + agents/commands
+make setup-macos-defaults  Apply macOS system preferences
+make setup-notes           Clone Obsidian notes repo
+make clone-dev-setup       Clone private dev_setup repo
+make select-ide            Choose default IDE
+
+make print-variables       Show resolved config values
+make check-env             Validate .env
+make lint                  Lint Makefile modules
+make test                  Dry-run all targets
+make help                  Show this message
+```
+
+---
 
 ## Directory Structure
 
 ```
 dotfiles/
-├── brew/                 # Homebrew Brewfiles
-│   ├── default           # Base packages (all profiles)
-│   ├── main              # Personal profile additions
-│   └── work              # Work profile additions
-├── claude/               # Claude Code settings
-│   └── settings.json     # Global Claude configuration
-├── configs/              # Application configs
-│   ├── chezmoi/          # Chezmoi profile configs
-│   └── iterm2/           # iTerm2 settings
-├── devbox/               # Devbox environments
-│   ├── main/             # Personal devbox packages
-│   └── work/             # Work devbox packages
-├── dot/                  # Chezmoi-managed dotfiles
-│   ├── dot_local/bin/    # Scripts installed to ~/.local/bin/
-│   │   └── executable_git-clone-bare-for-worktrees
-│   ├── dot_tmux.conf     # Tmux configuration
-│   ├── dot_zshrc.tmpl    # Zsh configuration
-│   ├── dot_gitconfig.tmpl
-│   └── ...
-├── macos/                # macOS-specific scripts
-│   └── defaults.sh       # System preferences script
-├── zsh-helper/           # Shell utilities
-│   ├── .zsh_aliases
-│   ├── .zsh_functions
-│   ├── .zsh_worktrees    # Git worktree helpers (wt-add, wt-rm, wt-ls, etc.)
-│   └── ...
-├── .env.example          # Configuration template
-├── .env                  # Your local config (gitignored)
-└── Makefile              # Automation targets
+├── brew/                     # Homebrew Brewfiles
+│   ├── default               # Installed on all profiles
+│   ├── main                  # Personal additions
+│   └── work                  # Work additions
+├── configs/
+│   └── chezmoi/              # Profile-specific chezmoi .toml configs
+├── dot/                      # Chezmoi source — rendered and deployed to ~
+│   ├── dot_zshrc.tmpl        # → ~/.zshrc
+│   ├── dot_tmux.conf         # → ~/.tmux.conf
+│   ├── dot_gitconfig.tmpl    # → ~/.gitconfig
+│   ├── dot_local/bin/        # → ~/.local/bin/ (scripts)
+│   └── private_dot_config/   # → ~/.config/ (Zed, etc.)
+├── flox/
+│   ├── main/                 # Flox environment for personal profile
+│   └── work/                 # Flox environment for work profile
+├── make/                     # Makefile modules
+├── macos/
+│   └── defaults.sh           # macOS system preferences script
+├── .env.example              # Configuration template
+└── Makefile
 ```
 
-## Profiles
-
-The setup supports two profiles selected during `make initialize`:
-
-| Profile | Use Case | Includes |
-|---------|----------|----------|
-| **Main** | Personal machine | Basic tools, WhatsApp |
-| **Work** | Work machine | Extended devops tools, Okta, work-specific configs |
-
-Profiles affect:
-- Brewfile packages installed
-- Devbox global packages
-- Chezmoi template variables (email, hostname-based config)
-- Claude Code local settings
-
-## Features
-
-- **Environment Detection**: Auto-detects macOS/Linux
-- **Idempotent Updates**: Safe to run `make update` repeatedly
-- **Profile System**: Separate configs for personal/work machines
-- **Chezmoi Integration**: Template-based dotfile management
-- **Devbox**: Nix-based reproducible dev environments
-- **Claude Code**: Managed settings with `includeCoAuthoredBy: false`
-- **IDE Switcher**: Switch between VS Code, Cursor, Zed with one command
-- **Git Worktrees**: Bare-repo worktree workflow with `git-clone-bare-for-worktrees` bootstrap and shell helpers
-- **macOS Defaults**: Sensible system preferences (configurable via .env)
-
-## macOS Defaults
-
-The `macos/defaults.sh` script configures sensible system preferences:
-
-- **Finder**: Show hidden files, path bar, status bar, disable .DS_Store on network drives
-- **Dock**: Auto-hide, fast animations, no recent apps
-- **Keyboard**: Fast key repeat, disable press-and-hold, full keyboard access
-- **Screenshots**: Save to ~/Screenshots as PNG, no shadow
-- **Safari**: Show full URL, enable Developer menu
-- **General**: Expand save/print dialogs, disable auto-correct
-
-Run with: `make setup-macos-defaults`
-
-**Override any setting** via `.env`:
-```bash
-MACOS_DOCK_AUTOHIDE=false
-MACOS_DOCK_ICON_SIZE=64
-MACOS_KEYBOARD_REPEAT_RATE=1
-```
-
-> Note: Some changes require logout/restart to take effect.
-
-## IDE Switcher
-
-Switch between IDEs with a single `code` command:
-
-```bash
-# Interactive selection with fzf
-switch-ide
-
-# Direct switch
-switch-ide cursor
-switch-ide zed
-switch-ide vscode
-
-# Check current IDE
-which-ide
-
-# Open files with current IDE
-code .
-code myfile.txt
-```
-
-Supports: VS Code, Cursor, Zed, Sublime Text, WebStorm, IntelliJ
+---
 
 ## Git Worktrees
 
-A bare-repo worktree workflow for working on multiple branches simultaneously without stashing or switching.
+A bare-repo workflow for working on multiple branches simultaneously without stashing.
 
-### Bootstrap Script
-
-`git-clone-bare-for-worktrees` (installed to `~/.local/bin/` via chezmoi) sets up any repo for worktrees:
+`git-clone-bare-for-worktrees` (installed to `~/.local/bin/`) sets up any repo:
 
 ```bash
-# Basic usage
 git-clone-bare-for-worktrees git@github.com:org/repo.git ~/projects/repo
-
-# With selective fetch (only fetches configured refspecs)
-git-clone-bare-for-worktrees --selective-fetch git@github.com:org/repo.git ~/work
 ```
 
-This creates a `<dir>/.bare/` + `<dir>/.git` file structure, then worktrees are added as sibling directories.
+This creates a `.bare/` + `.git` file structure; worktrees are added as siblings.
 
-### Shell Functions (generic)
+Work-specific worktree tooling (wt-create, wt-rm, envrc hooks) lives in `dev_setup` if configured.
 
-Sourced from `zsh-helper/.zsh_worktrees`:
-
-| Function | Description |
-|----------|-------------|
-| `wt-add <name> [branch]` | Add a worktree from the bare repo root |
-| `wt-rm <name>` | Remove a worktree (warns on uncommitted changes) |
-| `wt-ls` | List worktrees with branch, last commit, dirty status |
-| `wt-inspect [days]` | Find stale worktrees (default >7 days) |
-| `cdwt` | cd to the bare repo root |
-| `cdz` | cd to the current worktree root |
-
-### Work-Specific Wrappers (via dev_setup)
-
-Work-specific wrappers live in `dev_setup/zsh_work` and `dev_setup/worktree-config/`:
-
-- `zr-worktree-init` — one-time setup: bare clone with selective fetch, hooks, main worktree
-- `wt-create <TICKET> [desc]` — creates `$USER.TICKET.desc` branch + worktree off origin/main
-- `worktree-config/envrc` — direnv/devbox integration for worktrees
-- `worktree-config/post-checkout` — git hook that auto-links `.envrc` into new worktrees
-
-See `~/dev_setup/worktree-config/README.md` for full setup and usage instructions.
-
-## Tmux
-
-Tmux configuration is managed via chezmoi (`dot/dot_tmux.conf` → `~/.tmux.conf`).
-
-**Key bindings:**
-- Prefix: `Ctrl-a` (instead of default `Ctrl-b`)
-- `prefix + |` / `prefix + -` — split panes (horizontal/vertical)
-- `prefix + h/j/k/l` — vim-style pane navigation
-- `prefix + r` — reload config
-
-**Plugins** (managed by [TPM](https://github.com/tmux-plugins/tpm)):
-- `tmux-sensible` — sensible defaults
-- `tmux-resurrect` — persist sessions across restarts
-
-**First-time setup:**
-```bash
-make setup-tmux          # Install TPM
-tmux                     # Start tmux
-# Press Ctrl-a + I to install plugins
-```
-
-**Shell aliases:**
-| Alias | Command |
-|-------|---------|
-| `ta <name>` | Attach to session |
-| `tl` | List sessions |
-| `tn <name>` | New session |
-| `tk <name>` | Kill session |
-| `td` | Detach |
-| `tmain` | Attach or create "main" session |
-
-## Zed IDE Configuration
-
-Zed settings are managed by chezmoi with profile-specific templating:
-
-- Located at: `dot/private_dot_config/private_zed/settings.json.tmpl`
-- Deployed to: `~/.config/zed/settings.json`
-- Profile differences (e.g., theme) use chezmoi templating based on hostname
-
-Apply with: `chezmoi apply` or `make update`
-
-## Tool Stack
-
-| Tool | Purpose |
-|------|---------|
-| [Chezmoi](https://chezmoi.io) | Dotfile management with templating |
-| [Devbox](https://jetify.com/devbox) | Nix-based dev environments |
-| [Homebrew](https://brew.sh) | macOS/Linux package manager |
-| [Oh My Zsh](https://ohmyz.sh) | Zsh framework |
-| [Direnv](https://direnv.net) | Per-directory environment variables |
+---
 
 ## Updating
 
-After making changes to dotfiles:
-
 ```bash
-# Pull latest and apply all changes
+# Pull and re-apply everything
 make update
 
-# Or update specific components
-make update-chezmoi           # Just dotfiles
-make update-oh-my-zsh-plugins # Just plugins
-make refresh-devbox-config    # Reinstall devbox packages
+# Or individual pieces
+make update-chezmoi            # Dotfiles only
+make update-oh-my-zsh-plugins  # Zsh plugins
+make update-tmux-plugins       # Tmux plugins
+make refresh-flox-config       # Flox packages
 ```
+
+---
 
 ## Troubleshooting
 
-**Chezmoi not seeing changes?**
-```bash
-# The chezmoi source is symlinked to ~/dotfiles
-ls -la ~/.local/share/chezmoi
-# Should show: chezmoi -> /Users/you/dotfiles
-```
-
-**Missing .env file?**
+**`make` fails asking for GIT_USER**
 ```bash
 cp .env.example .env
-# Edit with your settings
+# Set GIT_USER and PROFILE, then re-run make
 ```
 
-**GIT_USER error?**
+**Flox environment not found**
+The `flox/main/` and `flox/work/` directories are in this repo. If chezmoi hasn't pulled them yet:
 ```bash
-# Make sure GIT_USER is set in .env
-echo "GIT_USER=your-github-username" >> .env
+make setup-chezmoi
+make setup-flox-config PROFILE=main
 ```
+
+**Chezmoi source location**
+```bash
+ls -la ~/.local/share/chezmoi
+# Should be the actual repo (or a symlink to it)
+```
+
+**MCP merge skipped with a warning**
+The `dev_setup/claude/claude_mcp_<profile>.json` file may be commented out — this is intentional and safe to ignore.
