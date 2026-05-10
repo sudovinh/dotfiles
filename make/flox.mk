@@ -1,0 +1,29 @@
+# ============================================
+# FLOX
+# ============================================
+
+.PHONY: install-flox
+install-flox: ## Install flox CLI (via brew cask on macOS, install script on Linux)
+	@if ! command -v flox > /dev/null 2>&1; then \
+		echo "Installing Flox..."; \
+		if command -v brew > /dev/null 2>&1; then \
+			brew install --cask flox; \
+		else \
+			curl -fsSL $(FLOX_INSTALL_SCRIPT) | bash; \
+		fi; \
+	fi
+	@echo "Flox ready."
+
+.PHONY: setup-flox-config
+setup-flox-config: ## Verify flox environment exists for active profile
+	@if [ -d "$(FLOX_PROFILE_DIR)/.flox" ]; then \
+		echo "Flox environment found for profile '$(PROFILE)'."; \
+	else \
+		echo "ERROR: No flox environment at $(FLOX_PROFILE_DIR)/.flox" && exit 1; \
+	fi
+
+.PHONY: refresh-flox-config
+refresh-flox-config: ## Update packages in the active flox profile
+	@echo "Updating flox environment for profile '$(PROFILE)'..."
+	@cd $(FLOX_PROFILE_DIR) && flox update
+	@echo "Flox config refreshed."
