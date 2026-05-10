@@ -59,10 +59,10 @@ linux-setup: \
 	install-flox \
 	install-direnv \
 	clone-dev-setup \
+	setup-chezmoi \
 	setup-shell \
 	setup-tmux \
 	setup-flox-config \
-	setup-chezmoi \
 	setup-notes \
 	setup-claude-config
 	@echo ""
