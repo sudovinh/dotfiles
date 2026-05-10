@@ -4,11 +4,13 @@
 
 .PHONY: install-flox
 install-flox: ## Install flox CLI (via brew cask on macOS, install script on Linux)
-	@echo "Installing Flox..."
-	@if command -v brew > /dev/null 2>&1; then \
-		brew install --cask flox 2>/dev/null || brew upgrade --cask flox; \
-	else \
-		command -v flox > /dev/null 2>&1 || curl -fsSL $(FLOX_INSTALL_SCRIPT) | bash; \
+	@if ! command -v flox > /dev/null 2>&1; then \
+		echo "Installing Flox..."; \
+		if command -v brew > /dev/null 2>&1; then \
+			brew install --cask flox; \
+		else \
+			curl -fsSL $(FLOX_INSTALL_SCRIPT) | bash; \
+		fi; \
 	fi
 	@echo "Flox ready."
 
