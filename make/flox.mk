@@ -19,8 +19,15 @@ install-direnv: ## Install direnv if not present
 	@command -v direnv > /dev/null 2>&1 || (echo "Installing Direnv..." && curl -fsSL $(DIRENV_INSTALL_SCRIPT) | bash)
 	@echo "Direnv ready."
 
+.PHONY: remove-devbox-envrc
+remove-devbox-envrc:
+	@if [ -f "$(HOME)/.envrc" ] && grep -q "devbox" "$(HOME)/.envrc" 2>/dev/null; then \
+		echo "Removing devbox ~/.envrc..."; \
+		rm "$(HOME)/.envrc"; \
+	fi
+
 .PHONY: setup-flox-config
-setup-flox-config: ## Verify flox environment exists for active profile
+setup-flox-config: remove-devbox-envrc ## Verify flox environment exists for active profile
 	@if [ -d "$(FLOX_PROFILE_DIR)/.flox" ]; then \
 		echo "Flox environment found for profile '$(PROFILE)'."; \
 	else \
