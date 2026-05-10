@@ -31,7 +31,7 @@ test:
 		setup-chezmoi update-chezmoi \
 		brew-bundle-default brew-bundle-profile setup-brewfile \
 		setup-shell setup-tmux update-tmux-plugins update-oh-my-zsh-plugins \
-		setup-devbox-config refresh-devbox-config install-devbox install-direnv \
+		setup-flox-config refresh-flox-config install-flox install-direnv \
 		setup-claude-config clone-dev-setup setup-notes update-repos \
 		install-xcode install-powerline-fonts setup-iterm2-shell-integration \
 		setup-macos-defaults select-ide setup-zed-config \

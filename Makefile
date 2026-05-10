@@ -10,7 +10,6 @@ include make/homebrew.mk
 include make/chezmoi.mk
 include make/shell.mk
 include make/tmux.mk
-include make/devbox.mk
 include make/flox.mk
 include make/claude.mk
 include make/repos.mk
