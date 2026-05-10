@@ -24,6 +24,10 @@ setup-flox-config: ## Verify flox environment exists for active profile
 
 .PHONY: refresh-flox-config
 refresh-flox-config: ## Update packages in the active flox profile
-	@echo "Updating flox environment for profile '$(PROFILE)'..."
-	@cd $(FLOX_PROFILE_DIR) && flox update
-	@echo "Flox config refreshed."
+	@if [ -d "$(FLOX_PROFILE_DIR)/.flox" ]; then \
+		echo "Updating flox environment for profile '$(PROFILE)'..."; \
+		cd $(FLOX_PROFILE_DIR) && flox update; \
+		echo "Flox config refreshed."; \
+	else \
+		echo "ERROR: No flox environment at $(FLOX_PROFILE_DIR)/.flox" && exit 1; \
+	fi
