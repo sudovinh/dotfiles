@@ -124,15 +124,19 @@ ln -sf $DEV_DIR/claude_settings_local_work.json $HOME/.claude/settings.local.jso
 ln -sf $DEV_DIR/claude_settings_local_main.json $HOME/.claude/settings.local.json 2>/dev/null
 {{- end }}
 
-source <(devbox completion zsh); compdef _devbox devbox
 source <(kubectl completion zsh | sed 's/kubectl/kc/g')
 source <(k completion zsh)
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
-eval "$(devbox global shellenv)"
+{{ if eq .chezmoi.hostname "vinh-zip" }}
+eval "$(flox activate --dir $HOME/dotfiles/flox/work -m run)"
+{{ else }}
+eval "$(flox activate --dir $HOME/dotfiles/flox/main -m run)"
+{{- end }}
+source <(flox completion zsh) 2>/dev/null || true
 eval "$(direnv hook zsh)"
 
-# Auto-start tmux (after devbox so tmux is in PATH)
+# Auto-start tmux (after flox so tmux is in PATH)
 if command -v tmux &>/dev/null && [ -z "$TMUX" ]; then
   tmux new-session -c ~
 fi

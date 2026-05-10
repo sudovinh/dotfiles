@@ -10,7 +10,7 @@ include make/homebrew.mk
 include make/chezmoi.mk
 include make/shell.mk
 include make/tmux.mk
-include make/devbox.mk
+include make/flox.mk
 include make/claude.mk
 include make/repos.mk
 include make/system.mk
@@ -39,14 +39,14 @@ mac-setup: \
 	install-powerline-fonts \
 	setup-iterm2-shell-integration \
 	setup-chezmoi \
-	install-devbox \
+	install-flox \
 	install-direnv \
 	brew-bundle-default \
 	brew-bundle-profile \
 	clone-dev-setup \
 	setup-shell \
 	setup-tmux \
-	setup-devbox-config \
+	setup-flox-config \
 	setup-notes \
 	setup-claude-config
 	@echo ""
@@ -55,13 +55,13 @@ mac-setup: \
 .PHONY: linux-setup
 linux-setup: \
 	install-powerline-fonts \
-	install-devbox \
+	install-flox \
 	install-direnv \
 	clone-dev-setup \
+	setup-chezmoi \
 	setup-shell \
 	setup-tmux \
-	setup-devbox-config \
-	setup-chezmoi \
+	setup-flox-config \
 	setup-notes \
 	setup-claude-config
 	@echo ""
@@ -90,7 +90,7 @@ mac-update: \
 	brew-bundle-default \
 	brew-bundle-profile \
 	setup-claude-config \
-	refresh-devbox-config
+	refresh-flox-config
 	@echo "macOS update complete."
 
 .PHONY: linux-update
@@ -100,7 +100,7 @@ linux-update: \
 	update-oh-my-zsh-plugins \
 	update-tmux-plugins \
 	setup-claude-config \
-	refresh-devbox-config
+	refresh-flox-config
 	@echo "Linux update complete."
 
 # ============================================
@@ -130,8 +130,8 @@ help:
 	@echo "  setup-tmux             Install TPM and all tmux plugins"
 	@echo "  update-tmux-plugins    Update all tmux plugins"
 	@echo "  setup-claude-config    Link Claude settings + agents/commands"
-	@echo "  setup-devbox-config    Link profile Devbox config"
-	@echo "  refresh-devbox-config  Force-regenerate devbox.lock"
+	@echo "  setup-flox-config      Verify flox environment for active profile"
+	@echo "  refresh-flox-config    Update packages in the active flox profile"
 	@echo "  brew-bundle-default    Install default Brewfile"
 	@echo "  brew-bundle-profile    Install profile Brewfile"
 	@echo "  setup-macos-defaults   Apply macOS system preferences"
