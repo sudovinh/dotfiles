@@ -35,8 +35,6 @@ brew "kreuzwerker/taps/m1-terraform-provider-helper"
 cask "okta"
 
 # Go tools
-go "cmd/go"
-go "cmd/gofmt"
 go "github.com/brancz/gojsontoyaml"
 go "golang.org/x/tools/gopls"
 go "github.com/piqoni/hn-text"
