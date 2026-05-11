@@ -20,6 +20,7 @@ CHEZMOI_CONFIG_DIR := $(HOME)/.config/chezmoi
 CONFIGS_DIR     := $(DOTFILES_DIR)/configs
 DIRENV_INSTALL_SCRIPT := https://direnv.net/install.sh
 FLOX_INSTALL_SCRIPT   := https://install.flox.dev
+FLOX_VERSION          ?=
 DOTFILE_SCRIPTS := $(DOTFILES_DIR)/scripts
 HOMEBREW_URL    := https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
 CLAUDE_CONFIG_DIR := $(HOME)/.claude

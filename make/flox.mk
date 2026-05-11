@@ -3,16 +3,25 @@
 # ============================================
 
 .PHONY: install-flox
-install-flox: ## Install flox CLI (via brew cask on macOS, install script on Linux)
-	@if ! command -v flox > /dev/null 2>&1; then \
-		echo "Installing Flox..."; \
-		if command -v brew > /dev/null 2>&1; then \
-			brew install --cask flox; \
+install-flox: ## Install flox CLI (via brew cask on macOS, install script on Linux); set FLOX_VERSION in .env to pin a version
+	@if command -v flox > /dev/null 2>&1; then \
+		echo "Flox ready."; \
+	elif command -v brew > /dev/null 2>&1; then \
+		if [ -n "$(FLOX_VERSION)" ]; then \
+			brew install --cask flox@$(FLOX_VERSION) 2>/dev/null || true; \
 		else \
-			curl -fsSL $(FLOX_INSTALL_SCRIPT) | bash; \
+			brew install --cask flox 2>/dev/null || true; \
 		fi; \
+		FLOX_PKG=$$(find /opt/homebrew/Caskroom/flox -name "*.pkg" 2>/dev/null | sort -V | tail -1); \
+		if [ -z "$$FLOX_PKG" ]; then \
+			echo "ERROR: No flox pkg found after brew install" && exit 1; \
+		fi; \
+		echo "Running pkg installer (requires sudo)..."; \
+		sudo installer -pkg "$$FLOX_PKG" -target / && echo "Flox ready." || exit 1; \
+	else \
+		echo "Installing Flox via install script..."; \
+		curl -fsSL $(FLOX_INSTALL_SCRIPT) | bash && echo "Flox ready." || exit 1; \
 	fi
-	@echo "Flox ready."
 
 .PHONY: install-direnv
 install-direnv: ## Install direnv if not present
