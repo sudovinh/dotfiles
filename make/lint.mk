@@ -30,7 +30,7 @@ test:
 		mac-setup linux-setup mac-update linux-update \
 		setup-chezmoi update-chezmoi \
 		brew-bundle-default brew-bundle-profile setup-brewfile \
-		setup-shell setup-tmux update-tmux-plugins update-oh-my-zsh-plugins \
+		setup-shell setup-zellij update-oh-my-zsh-plugins \
 		setup-flox-config refresh-flox-config install-flox install-direnv \
 		setup-claude-config clone-dev-setup setup-notes update-repos \
 		install-xcode install-powerline-fonts setup-iterm2-shell-integration \

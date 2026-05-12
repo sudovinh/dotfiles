@@ -30,8 +30,6 @@ OH_MY_ZSH_INSTALL_SCRIPT := https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/ma
 ZSH_PLUGIN_URLS := \
 	"https://github.com/zsh-users/zsh-autosuggestions.git" \
 	"https://github.com/zsh-users/zsh-syntax-highlighting.git"
-TPM_DIR         := $(HOME)/.tmux/plugins/tpm
-TPM_REPO        := https://github.com/tmux-plugins/tpm
 UNAME_S         := $(shell uname -s)
 
 # Derived paths (depend on PROFILE)

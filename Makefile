@@ -9,7 +9,7 @@ include make/validation.mk
 include make/homebrew.mk
 include make/chezmoi.mk
 include make/shell.mk
-include make/tmux.mk
+include make/zellij.mk
 include make/flox.mk
 include make/claude.mk
 include make/repos.mk
@@ -45,7 +45,7 @@ mac-setup: \
 	brew-bundle-profile \
 	clone-dev-setup \
 	setup-shell \
-	setup-tmux \
+	setup-zellij \
 	setup-flox-config \
 	setup-notes \
 	setup-claude-config
@@ -60,7 +60,7 @@ linux-setup: \
 	clone-dev-setup \
 	setup-chezmoi \
 	setup-shell \
-	setup-tmux \
+	setup-zellij \
 	setup-flox-config \
 	setup-notes \
 	setup-claude-config
@@ -86,7 +86,6 @@ mac-update: \
 	update-chezmoi \
 	update-repos \
 	update-oh-my-zsh-plugins \
-	update-tmux-plugins \
 	brew-bundle-default \
 	brew-bundle-profile \
 	setup-claude-config \
@@ -98,7 +97,6 @@ linux-update: \
 	update-chezmoi \
 	update-repos \
 	update-oh-my-zsh-plugins \
-	update-tmux-plugins \
 	setup-claude-config \
 	refresh-flox-config
 	@echo "Linux update complete."
@@ -127,8 +125,7 @@ help:
 	@echo ""
 	@echo "Individual targets:"
 	@echo "  setup-chezmoi          Init/update chezmoi dotfiles"
-	@echo "  setup-tmux             Install TPM and all tmux plugins"
-	@echo "  update-tmux-plugins    Update all tmux plugins"
+	@echo "  setup-zellij           Verify Zellij installation"
 	@echo "  setup-claude-config    Link Claude settings + agents/commands"
 	@echo "  setup-flox-config      Verify flox environment for active profile"
 	@echo "  refresh-flox-config    Update packages in the active flox profile"

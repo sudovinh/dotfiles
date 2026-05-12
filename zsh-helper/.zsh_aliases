@@ -86,25 +86,24 @@ alias zsh-time='time zsh -i -c exit'
 ## Claude
 alias reload-claude='make -C ~/.local/share/chezmoi setup-claude-config'
 
-## Tmux
-alias tm-a='tmux attach -t'
-alias tm-l='tmux list-sessions'
-alias tm-n='tmux new -s'
-alias tm-k='tmux kill-session -t'
-alias tm-d='tmux detach'
-alias tm-main='tmux new-session -A -s main'
-alias tm-help='echo "Tmux Aliases:
-  tm-a <name>    Attach to session
-  tm-l            List sessions
-  tm-n <name>    New session
-  tm-k <name>    Kill session
-  tm-d            Detach
-  tm-main         Attach/create \"main\" session
-  tm-help         Show this help
+## Zellij
+alias zj-a='zellij attach'
+alias zj-l='zellij list-sessions'
+alias zj-n='zellij --session'
+alias zj-k='zellij kill-session'
+alias zj-d='zellij detach'
+alias zj-main='zellij attach main 2>/dev/null || zellij --session main'
+alias zj-help='echo "Zellij Aliases:
+  zj-a <name>    Attach to session
+  zj-l            List sessions
+  zj-n <name>    New named session
+  zj-k <name>    Kill session
+  zj-d            Detach
+  zj-main         Attach/create \"main\" session
+  zj-help         Show this help
 
-Copy in tmux:
-  Ctrl-a [        Enter copy mode
-  v               Start selection
-  y               Copy to clipboard (pbcopy)
-  Ctrl-a ]        Paste
-  Option+click    Native terminal select (bypass tmux)"'
+Copy in Zellij:
+  Mouse select   Auto-copies to clipboard (no mode needed)
+  Ctrl-a         Enter Pane mode
+  | or -         Split pane right / down
+  h/j/k/l        Navigate panes"'
