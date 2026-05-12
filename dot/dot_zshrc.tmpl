@@ -136,11 +136,6 @@ eval "$(flox activate --dir $HOME/dotfiles/flox/main -m run)"
 source <(flox completion zsh) 2>/dev/null || true
 eval "$(direnv hook zsh)"
 
-# Auto-start zellij (after flox so zellij is in PATH)
-if command -v zellij &>/dev/null && [ -z "$ZELLIJ" ]; then
-  zellij attach main 2>/dev/null || zellij --session main
-fi
-
 # Docker CLI completions (if Docker Desktop installed)
 if [ -d "$HOME/.docker/completions" ]; then
     fpath=($HOME/.docker/completions $fpath)
