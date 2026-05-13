@@ -57,7 +57,6 @@ alias docker_delete_containers='docker rm $(docker ps -a -q)'
 alias docker_delete_img='docker rmi $(docker images -q)'
 alias docker_build_arm="docker build --platform=linux/arm64 -t $1-arm64 ."
 alias docker_build_amd="docker build --platform=linux/amd64 -t $1-amd64 ."
-alias kubectl="/Users/$(whoami)/.local/share/devbox/global/default/.devbox/nix/profile/default/bin/kubectl"
 alias k='kubectl'
 alias kg="kubectl get"
 alias kd="kubectl describe"
