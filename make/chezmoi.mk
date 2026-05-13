@@ -25,7 +25,8 @@ else
 		chezmoi init --apply $(GIT_USER); \
 	else \
 		echo "Chezmoi already initialized. Pulling updates..." && \
-		chezmoi git pull; \
+		chezmoi git pull && \
+		chezmoi apply; \
 	fi
 endif
 	@$(MAKE) _link-chezmoi-toml
