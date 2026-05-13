@@ -124,8 +124,8 @@ ln -sf $DEV_DIR/claude_settings_local_work.json $HOME/.claude/settings.local.jso
 ln -sf $DEV_DIR/claude_settings_local_main.json $HOME/.claude/settings.local.json 2>/dev/null
 {{- end }}
 
-source <(kubectl completion zsh | sed 's/kubectl/kc/g')
-source <(k completion zsh)
+command -v kubectl &>/dev/null && source <(kubectl completion zsh | sed 's/kubectl/kc/g')
+command -v kubectl &>/dev/null && source <(kubectl completion zsh | sed 's/kubectl/k/g')
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 source <(flox completion zsh) 2>/dev/null || true
