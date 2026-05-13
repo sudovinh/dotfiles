@@ -33,7 +33,7 @@ else
 endif
 
 .PHONY: mac-setup
-mac-setup: \
+mac-setup: request-sudo \
 	install-xcode \
 	install-homebrew \
 	install-powerline-fonts \

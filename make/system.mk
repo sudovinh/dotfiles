@@ -2,6 +2,11 @@
 # SYSTEM TOOLS
 # ============================================
 
+.PHONY: request-sudo
+request-sudo: ## Prompt for sudo password once upfront and keep credentials cached
+	@echo "Requesting sudo credentials (will be reused throughout setup)..."
+	@sudo -v
+
 .PHONY: install-xcode
 install-xcode:
 ifeq ($(UNAME_S), Darwin)

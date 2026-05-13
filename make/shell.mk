@@ -31,7 +31,7 @@ ifeq ($(UNAME_S), Darwin)
 else ifeq ($(UNAME_S), Linux)
 	@command -v zsh > /dev/null 2>&1 || (echo "Installing zsh..." && apt install zsh)
 endif
-	@chsh -s $$(which zsh) 2>/dev/null || true
+	@sudo chsh -s $$(which zsh) $(USER) 2>/dev/null || true
 	@echo "Shell setup complete."
 
 .PHONY: update-oh-my-zsh-plugins

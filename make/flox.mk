@@ -4,7 +4,8 @@
 
 .PHONY: install-flox
 install-flox: ## Install flox CLI (via brew cask on macOS, install script on Linux); set FLOX_VERSION in .env to pin a version
-	@if command -v flox > /dev/null 2>&1; then \
+	@export PATH="/opt/homebrew/bin:$$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$$PATH"; \
+	if command -v flox > /dev/null 2>&1; then \
 		echo "Flox ready."; \
 	elif command -v brew > /dev/null 2>&1; then \
 		if [ -n "$(FLOX_VERSION)" ]; then \
@@ -17,7 +18,13 @@ install-flox: ## Install flox CLI (via brew cask on macOS, install script on Lin
 			echo "ERROR: No flox pkg found after brew install" && exit 1; \
 		fi; \
 		echo "Running pkg installer (requires sudo)..."; \
-		sudo installer -pkg "$$FLOX_PKG" -target / && echo "Flox ready." || exit 1; \
+		sudo installer -pkg "$$FLOX_PKG" -target / || exit 1; \
+		export PATH="/opt/homebrew/bin:$$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$$PATH"; \
+		if ! command -v flox > /dev/null 2>&1; then \
+			echo "pkg installed nix; installing flox package via nix..."; \
+			/nix/var/nix/profiles/default/bin/nix --extra-experimental-features 'nix-command flakes' profile install --accept-flake-config github:flox/flox || exit 1; \
+		fi; \
+		echo "Flox ready."; \
 	else \
 		echo "Installing Flox via install script..."; \
 		curl -fsSL $(FLOX_INSTALL_SCRIPT) | bash && echo "Flox ready." || exit 1; \
