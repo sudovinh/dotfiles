@@ -1,3 +1,5 @@
 export PATH=$HOME/go/bin:$PATH
 export PATH=$PATH:$HOME/go/bin
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+# nix-managed tools (flox, etc.)
+export PATH="$HOME/.nix-profile/bin:$PATH"

@@ -128,7 +128,7 @@ command -v kubectl &>/dev/null && source <(kubectl completion zsh | sed 's/kubec
 command -v kubectl &>/dev/null && source <(kubectl completion zsh | sed 's/kubectl/k/g')
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
-source <(flox completion zsh) 2>/dev/null || true
+command -v flox &>/dev/null && source <(flox completion zsh)
 eval "$(direnv hook zsh)"
 
 # Docker CLI completions (if Docker Desktop installed)
