@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: wt-add <name> [<branch>]
+
+Add a git worktree from the bare repo root.
+
+If <branch> is omitted, creates a new branch named <name> based on origin/main.
+Defaults to ~/zr as the bare repo root if not inside a worktree tree.
+
+EXAMPLES:
+  wt-add my-feature
+  wt-add hotfix origin/release-1.0
+USAGE
+}
+
+# Walk up from $PWD looking for a .bare/ directory
+_find_bare_root() {
+  local dir="$PWD"
+  while [[ "$dir" != "/" ]]; do
+    if [[ -d "$dir/.bare" ]]; then
+      echo "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+  return 1
+}
+
+if [[ $# -lt 1 ]] || [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
+name="$1"
+branch="${2:-}"
+
+# Resolve bare root: walk-up first, fall back to ~/zr
+if ! root="$(_find_bare_root 2>/dev/null)"; then
+  root="$HOME/zr"
+fi
+
+if [[ ! -d "$root/.bare" ]]; then
+  echo "Error: no .bare/ found at $root" >&2
+  exit 1
+fi
+
+wt_path="$root/$name"
+
+if [[ -d "$wt_path" ]]; then
+  echo "Error: $wt_path already exists" >&2
+  exit 1
+fi
+
+if [[ -n "$branch" ]]; then
+  git -C "$root" worktree add "$wt_path" "$branch"
+else
+  echo "Fetching latest main..."
+  git -C "$root" fetch origin main
+  git -C "$root" worktree add "$wt_path" -b "$name" origin/main
+fi
+
+# Symlink .envrc if worktree-config envrc exists
+envrc_src="$HOME/dev_setup/worktree-config/envrc"
+if [[ -f "$envrc_src" ]] && [[ ! -e "$wt_path/.envrc" ]]; then
+  ln -sf "$envrc_src" "$wt_path/.envrc"
+  if command -v direnv &>/dev/null; then
+    direnv allow "$wt_path" 2>/dev/null || true
+  fi
+fi
+
+echo ""
+echo "Worktree ready: $wt_path"
+echo "  cd $wt_path"
