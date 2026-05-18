@@ -1160,3 +1160,55 @@ function kgetrestarts() {
         -o custom-columns="NAME:.metadata.name,RESTARTS:.status.containerStatuses[0].restartCount,STATUS:.status.phase" \
         | awk 'NR==1 || $2>0'
 }
+
+###############################################################################
+# Flox environment switcher using fzf
+# Usage:
+#   floxswitch           # Interactive fzf picker, activates selected env
+###############################################################################
+function floxswitch() {
+  if ! command -v fzf &>/dev/null; then
+    echo "fzf not found. Install with: brew install fzf"
+    return 1
+  fi
+
+  local env_list
+  # Sort order: active first (0), then /main paths (1), then everything else (2)
+  env_list=$(flox envs 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | awk '
+    /^Active/   { section = "active" }
+    /^Inactive/ { section = "inactive" }
+    /^[[:space:]]+[^[:space:]]/ {
+      gsub(/^[[:space:]]+/, "")
+      if ($2 ~ /^\//) {
+        status = (section == "active") ? " [active]" : ""
+        if (section == "active")    key = "0"
+        else if ($2 ~ /\/main$/)    key = "1"
+        else                        key = "2"
+        print key "\t" $1 status "\t" $2
+      }
+    }
+  ' | sort -t$'\t' -k1,1 | cut -f2-)
+
+  if [[ -z "$env_list" ]]; then
+    echo "No flox environments found."
+    return 1
+  fi
+
+  local selected
+  selected=$(echo "$env_list" \
+    | fzf --prompt="flox env> " \
+          --height=40% \
+          --reverse \
+          --delimiter=$'\t' \
+          --with-nth=1 \
+          --preview='echo "Path: {2}"' \
+    )
+
+  [[ -z "$selected" ]] && return 0
+
+  local env_path
+  env_path=$(echo "$selected" | cut -f2)
+
+  echo "Activating: $env_path"
+  flox activate -d "$env_path"
+}

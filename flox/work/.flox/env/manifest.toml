@@ -1,11 +1,3 @@
-## Flox Environment Manifest -----------------------------------------
-##
-##   _Everything_ you need to know about the _manifest_ is here:
-##
-##   https://flox.dev/docs/reference/command-reference/manifest.toml/
-##
-## -------------------------------------------------------------------
-# Flox manifest version managed by Flox CLI
 schema-version = "1.12.0"
 
 
@@ -51,6 +43,7 @@ yamllint.pkg-path = "yamllint"
 s5cmd.pkg-path = "s5cmd"
 git-filter-repo.pkg-path = "git-filter-repo"
 bash.pkg-path = "bash"
+nix.pkg-path = "nix"
 
 
 ## Environment Variables ---------------------------------------------
