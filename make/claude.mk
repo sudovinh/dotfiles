@@ -25,14 +25,13 @@ setup-claude-config:
 		CLAUDE_USER_CFG="$(HOME)/.claude.json"; \
 		if [ -f "$$MCP_SRC" ] && [ -f "$$CLAUDE_USER_CFG" ] && command -v jq >/dev/null 2>&1; then \
 			STRIPPED=$$(sed 's|^\s*//.*||' "$$MCP_SRC"); \
-			if echo "$$STRIPPED" | jq empty >/dev/null 2>&1; then \
-				echo "Merging MCP servers from $$MCP_SRC into $$CLAUDE_USER_CFG..." && \
-				echo "$$STRIPPED" | jq -s '.[0].mcpServers = (.[0].mcpServers // {}) * (.[1].mcpServers // {}) | .[0]' \
-					"$$CLAUDE_USER_CFG" - > "$$CLAUDE_USER_CFG.tmp" && \
-				mv "$$CLAUDE_USER_CFG.tmp" "$$CLAUDE_USER_CFG"; \
-			else \
-				echo "Skipping MCP merge: $$MCP_SRC is not valid JSON (may be commented out)."; \
+			if ! echo "$$STRIPPED" | jq empty >/dev/null 2>&1; then \
+				STRIPPED='{"mcpServers": {}}'; \
 			fi; \
+			echo "Merging MCP servers from $$MCP_SRC into $$CLAUDE_USER_CFG..." && \
+			echo "$$STRIPPED" | jq -s '.[0].mcpServers = (.[1].mcpServers // {}) | .[0]' \
+				"$$CLAUDE_USER_CFG" - > "$$CLAUDE_USER_CFG.tmp" && \
+			mv "$$CLAUDE_USER_CFG.tmp" "$$CLAUDE_USER_CFG"; \
 		elif [ -f "$$MCP_SRC" ] && ! command -v jq >/dev/null 2>&1; then \
 			echo "Warning: jq not found, skipping MCP server merge."; \
 		else \
