@@ -6,18 +6,28 @@
 setup-claude-config:
 	@echo "Setting up Claude Code configuration..."
 	@mkdir -p $(CLAUDE_CONFIG_DIR)
-	@# Link settings if dev_setup is available
+	@# Write settings as real file (not symlink) to prevent repo drift from session changes
 	@if [ -n "$(DEV_SETUP_REPO)" ] && [ -d "$(DEV_SETUP_CLAUDE_DIR)" ]; then \
-		CLAUDE_SRC="$(DEV_SETUP_CLAUDE_DIR)/claude_settings_local_$(PROFILE).json"; \
-		if [ -f "$$CLAUDE_SRC" ]; then \
-			echo "Linking Claude settings from $$CLAUDE_SRC..." && \
-			ln -sf "$$CLAUDE_SRC" "$(CLAUDE_CONFIG_DIR)/settings.json" && \
-			ln -sf "$$CLAUDE_SRC" "$(CLAUDE_CONFIG_DIR)/settings.local.json"; \
+		PROFILE_SRC="$(DEV_SETUP_CLAUDE_DIR)/claude_settings_local_$(PROFILE).json"; \
+		LIVE="$(CLAUDE_CONFIG_DIR)/settings.json"; \
+		if [ -f "$$PROFILE_SRC" ]; then \
+			echo "Syncing Claude settings from $$PROFILE_SRC..."; \
+			if [ -f "$$LIVE" ] && [ ! -L "$$LIVE" ] && command -v jq >/dev/null 2>&1; then \
+				echo "Merging safe fields from live settings..." && \
+				jq -s '.[0] as $$p | .[1] as $$l | $$p | \
+					.permissions.allow = (($$p.permissions.allow // []) + ($$l.permissions.allow // []) | unique)' \
+					"$$PROFILE_SRC" "$$LIVE" > "$$LIVE.tmp" && \
+				mv "$$LIVE.tmp" "$$LIVE" && \
+				cp "$$LIVE" "$$PROFILE_SRC"; \
+			else \
+				rm -f "$$LIVE" && cp "$$PROFILE_SRC" "$$LIVE"; \
+			fi; \
 		else \
-			echo "Warning: $$CLAUDE_SRC not found, skipping settings link."; \
+			echo "Warning: $$PROFILE_SRC not found, skipping settings sync."; \
 		fi; \
+		rm -f "$(CLAUDE_CONFIG_DIR)/settings.local.json"; \
 	else \
-		echo "dev_setup not available, skipping Claude settings link."; \
+		echo "dev_setup not available, skipping Claude settings sync."; \
 	fi
 	@# Merge MCP servers from profile config into ~/.claude.json
 	@if [ -n "$(DEV_SETUP_REPO)" ] && [ -d "$(DEV_SETUP_CLAUDE_DIR)" ]; then \
