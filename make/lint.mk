@@ -32,7 +32,7 @@ test:
 		brew-bundle-default brew-bundle-profile setup-brewfile \
 		setup-shell setup-zellij update-oh-my-zsh-plugins \
 		setup-flox-config refresh-flox-config install-flox install-direnv \
-		install-chezmoi install-zellij \
+		install-chezmoi install-zellij install-orion \
 		setup-claude-config clone-dev-setup setup-notes update-repos \
 		install-xcode install-powerline-fonts setup-iterm2-shell-integration \
 		setup-macos-defaults select-ide setup-zed-config \

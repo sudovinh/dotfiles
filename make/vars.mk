@@ -34,6 +34,11 @@ ZSH_PLUGIN_URLS := \
 	"https://github.com/zsh-users/zsh-autosuggestions.git" \
 	"https://github.com/zsh-users/zsh-syntax-highlighting.git"
 UNAME_S         := $(shell uname -s)
+UNAME_M         := $(shell uname -m)
+# Orion browser (Linux Flatpak; macOS uses the brew cask). Version-pinned —
+# no "latest" URL exists, so bump ORION_VERSION (or set it in .env) on updates.
+ORION_VERSION   ?= 0.3.0
+FLATHUB_REPO_URL := https://flathub.org/repo/flathub.flatpakrepo
 
 # Derived paths (depend on PROFILE)
 CHEZMOI_TOML    := $(CONFIGS_DIR)/chezmoi/$(PROFILE).toml

@@ -58,6 +58,7 @@ linux-setup: \
 	install-powerline-fonts \
 	install-chezmoi \
 	install-zellij \
+	install-orion \
 	install-flox \
 	install-direnv \
 	clone-dev-setup \
