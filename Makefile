@@ -15,6 +15,7 @@ include make/claude.mk
 include make/repos.mk
 include make/system.mk
 include make/macos.mk
+include make/linux.mk
 include make/lint.mk
 
 # ============================================
@@ -55,6 +56,8 @@ mac-setup: request-sudo \
 .PHONY: linux-setup
 linux-setup: \
 	install-powerline-fonts \
+	install-chezmoi \
+	install-zellij \
 	install-flox \
 	install-direnv \
 	clone-dev-setup \

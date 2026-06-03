@@ -14,8 +14,7 @@ setup-claude-config:
 			echo "Syncing Claude settings from $$PROFILE_SRC..."; \
 			if [ -f "$$LIVE" ] && [ ! -L "$$LIVE" ] && command -v jq >/dev/null 2>&1; then \
 				echo "Merging safe fields from live settings..." && \
-				jq -s '.[0] as $$p | .[1] as $$l | $$p | \
-					.permissions.allow = (($$p.permissions.allow // []) + ($$l.permissions.allow // []) | unique)' \
+				jq -s '.[0] as $$p | .[1] as $$l | $$p | .permissions.allow = (($$p.permissions.allow // []) + ($$l.permissions.allow // []) | unique)' \
 					"$$PROFILE_SRC" "$$LIVE" > "$$LIVE.tmp" && \
 				mv "$$LIVE.tmp" "$$LIVE" && \
 				cp "$$LIVE" "$$PROFILE_SRC"; \

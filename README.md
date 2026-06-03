@@ -18,10 +18,15 @@ cp .env.example .env
 # Edit .env — set GIT_USER and PROFILE at minimum
 
 # 3. Run
-make
+make            # macOS
+./bootstrap.sh  # Linux — installs make/git/curl/fontconfig first, then runs make
 ```
 
-That's it. Re-running `make` at any time is safe and idempotent.
+That's it. Re-running `make` (or `./bootstrap.sh`) at any time is safe and idempotent.
+
+> **Linux:** a fresh machine may not have `make` installed yet, so use `./bootstrap.sh` for
+> the first run. It installs the apt prerequisites and then hands off to `make`. The Makefile
+> auto-detects the OS (`uname -s`) and runs the Linux setup path.
 
 ---
 

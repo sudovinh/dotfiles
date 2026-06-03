@@ -19,7 +19,7 @@ _install-omz-plugins:
 _setup-omz: _install-omz-plugins
 	@if [ ! -d $(HOME)/.oh-my-zsh ]; then \
 		echo "Installing Oh My Zsh..." && \
-		sh -c "$$(curl -fsSL $(OH_MY_ZSH_INSTALL_SCRIPT))"; \
+		RUNZSH=no CHSH=no sh -c "$$(curl -fsSL $(OH_MY_ZSH_INSTALL_SCRIPT))" "" --unattended; \
 	else \
 		echo "Oh My Zsh already installed."; \
 	fi
@@ -28,12 +28,17 @@ _setup-omz: _install-omz-plugins
 setup-shell: _setup-omz
 ifeq ($(UNAME_S), Darwin)
 	@command -v zsh > /dev/null 2>&1 || (echo "Installing zsh..." && brew install zsh)
-else ifeq ($(UNAME_S), Linux)
-	@command -v zsh > /dev/null 2>&1 || (echo "Installing zsh..." && apt install zsh)
-endif
-	@if [ "$$(dscl . -read /Users/$(USER) UserShell 2>/dev/null | awk '{print $$2}')" != "$$(which zsh)" ]; then \
-		sudo dscl . -create /Users/$(USER) UserShell $$(which zsh); \
+	@if [ "$$(dscl . -read /Users/$(USER) UserShell 2>/dev/null | awk '{print $$2}')" != "$$(command -v zsh)" ]; then \
+		echo "Setting zsh as default shell..." && \
+		sudo dscl . -create /Users/$(USER) UserShell $$(command -v zsh); \
 	fi
+else ifeq ($(UNAME_S), Linux)
+	@command -v zsh > /dev/null 2>&1 || (echo "Installing zsh..." && sudo apt-get install -y zsh)
+	@if [ "$$SHELL" != "$$(command -v zsh)" ]; then \
+		echo "Setting zsh as default shell..." && \
+		sudo chsh -s "$$(command -v zsh)" "$(USER)"; \
+	fi
+endif
 	@echo "Shell setup complete."
 
 .PHONY: update-oh-my-zsh-plugins

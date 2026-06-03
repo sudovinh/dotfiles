@@ -26,8 +26,21 @@ install-flox: ## Install flox CLI (via brew cask on macOS, install script on Lin
 		fi; \
 		echo "Flox ready."; \
 	else \
-		echo "Installing Flox via install script..."; \
-		curl -fsSL $(FLOX_INSTALL_SCRIPT) | bash && echo "Flox ready." || exit 1; \
+		echo "Installing Flox via apt repository (downloads.flox.dev)..."; \
+		wget -qO - "$(FLOX_DEB_KEYRING_URL)" | sudo tee /usr/share/keyrings/flox-archive-keyring.gpg >/dev/null || exit 1; \
+		echo "deb [signed-by=/usr/share/keyrings/flox-archive-keyring.gpg] $(FLOX_DEB_REPO_URL) stable/" \
+			| sudo tee /etc/apt/sources.list.d/flox.list >/dev/null || exit 1; \
+		sudo apt-get update || exit 1; \
+		if [ -n "$(FLOX_VERSION)" ]; then \
+			sudo apt-get install -y flox=$(FLOX_VERSION) || exit 1; \
+		else \
+			sudo apt-get install -y flox || exit 1; \
+		fi; \
+		if command -v flox > /dev/null 2>&1; then \
+			echo "Flox ready."; \
+		else \
+			echo "ERROR: flox not on PATH after install; open a new shell and re-run." && exit 1; \
+		fi; \
 	fi
 
 .PHONY: install-direnv

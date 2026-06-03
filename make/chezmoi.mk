@@ -20,16 +20,19 @@ ifeq ($(GIT_USER),)
 	@echo "Error: GIT_USER not set." && exit 1
 else
 	@echo "Configuring chezmoi..."
+	@# Clone/pull only — defer apply until after the toml (which supplies
+	@# template data like .email) and .chezmoiroot are linked below.
 	@if [ ! -d "$(CHEZMOI_DIR)" ]; then \
-		echo "Initializing chezmoi..." && \
-		chezmoi init --apply $(GIT_USER); \
+		echo "Initializing chezmoi (clone only)..." && \
+		chezmoi init $(GIT_USER); \
 	else \
 		echo "Chezmoi already initialized. Pulling updates..." && \
-		chezmoi git pull && \
-		chezmoi apply; \
+		chezmoi git pull; \
 	fi
 endif
 	@$(MAKE) _link-chezmoi-toml
+	@echo "Applying chezmoi..."
+	@chezmoi apply
 	@echo "Chezmoi setup complete."
 
 .PHONY: update-chezmoi
