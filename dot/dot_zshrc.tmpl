@@ -101,6 +101,10 @@ plugins=(git gh zsh-autosuggestions zsh-syntax-highlighting direnv)
 CHEZMOI_DIR=~/.local/share/chezmoi
 DEV_DIR=~/dev_setup
 
+# Add local bin to PATH early so tools installed there (direnv, chezmoi, etc.)
+# are found by the rest of this config, including the direnv hook below.
+export PATH="$HOME/.local/bin:$PATH"
+
 source $ZSH/oh-my-zsh.sh
 echo "Sourcing zsh-helper config files..."
 source $CHEZMOI_DIR/zsh-helper/.zsh_aliases
@@ -128,7 +132,7 @@ command -v kubectl &>/dev/null && source <(kubectl completion zsh | sed 's/kubec
 command -v kubectl &>/dev/null && source <(kubectl completion zsh | sed 's/kubectl/k/g')
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
-eval "$(direnv hook zsh)"
+command -v direnv >/dev/null 2>&1 && eval "$(direnv hook zsh)"
 
 # Docker CLI completions (if Docker Desktop installed)
 if [ -d "$HOME/.docker/completions" ]; then
@@ -136,9 +140,6 @@ if [ -d "$HOME/.docker/completions" ]; then
     autoload -Uz compinit
     compinit
 fi
-
-# Add local bin to PATH
-export PATH="$HOME/.local/bin:$PATH"
 
 # Local overrides (not tracked in git)
 # Use ~/.extra for machine-specific settings, API keys, etc.
