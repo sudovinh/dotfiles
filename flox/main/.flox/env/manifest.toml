@@ -1,11 +1,3 @@
-## Flox Environment Manifest -----------------------------------------
-##
-##   _Everything_ you need to know about the _manifest_ is here:
-##
-##   https://flox.dev/docs/reference/command-reference/manifest.toml/
-##
-## -------------------------------------------------------------------
-# Flox manifest version managed by Flox CLI
 schema-version = "1.12.0"
 
 
@@ -42,6 +34,9 @@ git.pkg-path = "git"
 gitleaks.pkg-path = "gitleaks"
 pre-commit.pkg-path = "pre-commit"
 pre-commit.outputs = "all"
+nodejs_20.pkg-path = "nodejs_20"
+terraform.pkg-path = "terraform"
+_1password-cli.pkg-path = "_1password-cli"
 
 
 ## Environment Variables ---------------------------------------------
