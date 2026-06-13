@@ -110,3 +110,8 @@ Copy in Zellij:
   Ctrl-a         Enter Pane mode
   | or -         Split pane right / down
   h/j/k/l        Navigate panes"'
+
+## Flox
+alias flox-update='flox upgrade'
+alias flox-list='flox list'
+alias flox-help='_flox_help'
