@@ -1,0 +1,47 @@
+#!/bin/bash
+# Sync chezmoi (public) and dev_setup (private) at Claude Code session start.
+# Blocks on conflict; warns on network/other failures.
+
+# ── Public dotfiles (chezmoi) ────────────────────────────────────────────────
+command -v chezmoi >/dev/null 2>&1 || exit 0
+
+if chezmoi git -- status 2>&1 | grep -q "rebase in progress"; then
+  echo "[chezmoi-sync] Stale rebase in public dotfiles" >&2
+  echo "  Abort:    chezmoi git -- rebase --abort" >&2
+  echo "  Continue: chezmoi git -- rebase --continue" >&2
+  exit 1
+fi
+
+output=$(chezmoi update --force 2>&1)
+if [ $? -ne 0 ]; then
+  if echo "$output" | grep -qi -e "conflict" -e "could not apply" -e "rebase"; then
+    echo "[chezmoi-sync] Conflict in public dotfiles:" >&2
+    echo "$output" >&2
+    echo "Resolve: chezmoi git -- status" >&2
+    exit 1
+  fi
+  echo "[chezmoi-sync] chezmoi update failed (network?), skipping" >&2
+fi
+
+# ── Private dotfiles (dev_setup) ─────────────────────────────────────────────
+DEV_SETUP="$HOME/dev_setup"
+[ -d "$DEV_SETUP/.git" ] || exit 0
+
+if git -C "$DEV_SETUP" status 2>&1 | grep -q "rebase in progress"; then
+  echo "[chezmoi-sync] Stale rebase in dev_setup" >&2
+  echo "  Abort: git -C $DEV_SETUP rebase --abort" >&2
+  exit 1
+fi
+
+out2=$(git -C "$DEV_SETUP" pull --rebase 2>&1)
+if [ $? -ne 0 ]; then
+  if echo "$out2" | grep -qi -e "CONFLICT" -e "conflict"; then
+    echo "[chezmoi-sync] Conflict in dev_setup:" >&2
+    echo "$out2" >&2
+    echo "Resolve: git -C $DEV_SETUP rebase --abort" >&2
+    exit 1
+  fi
+  echo "[chezmoi-sync] dev_setup pull failed (network?), skipping" >&2
+fi
+
+exit 0
