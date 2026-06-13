@@ -1212,3 +1212,18 @@ function floxswitch() {
   echo "Activating: $env_path"
   flox activate -d "$env_path"
 }
+
+function _flox_help() {
+  echo "Flox Aliases:
+  flox-update          Upgrade packages in active env (flox upgrade)
+  flox-list            List installed packages in active env (flox list)
+  floxswitch           Interactive env switcher (fzf)
+
+Flox Commands:
+  flox activate -d <path>   Activate an env by path
+  flox install <pkg>        Install a package
+  flox uninstall <pkg>      Remove a package
+  flox search <query>       Search available packages
+  flox show <pkg>           Show available versions of a package
+  flox envs                 List all known environments"
+}
