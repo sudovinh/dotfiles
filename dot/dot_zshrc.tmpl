@@ -127,6 +127,7 @@ ln -sf $DEV_DIR/claude_settings_local_work.json $HOME/.claude/settings.local.jso
 {{ else }}
 ln -sf $DEV_DIR/claude_settings_local_main.json $HOME/.claude/settings.local.json 2>/dev/null
 {{- end }}
+ln -sf $DEV_DIR/claude/claude_settings.json $HOME/.claude/settings.json 2>/dev/null
 
 command -v kubectl &>/dev/null && source <(kubectl completion zsh | sed 's/kubectl/kc/g')
 command -v kubectl &>/dev/null && source <(kubectl completion zsh | sed 's/kubectl/k/g')
