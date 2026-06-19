@@ -1,0 +1,20 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "defaultMode": "auto",
+    "allow": [
+      "Bash(diskutil list:*)",
+      "Bash(sudo zpool:*)",
+      "WebFetch(domain:raw.githubusercontent.com)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "mcpServers": {},
+  "preferences": {
+    "tmuxSplitPanes": true
+  }
+}
