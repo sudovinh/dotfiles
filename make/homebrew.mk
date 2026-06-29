@@ -36,6 +36,28 @@ else
 	@echo "Skipping profile Brewfile (not macOS)."
 endif
 
+.PHONY: brew-trust-taps
+brew-trust-taps:
+ifeq ($(UNAME_S), Darwin)
+	@echo "Trusting third-party Homebrew taps..."
+	@for tap in \
+		argoproj/tap \
+		cloudquery/tap \
+		common-fate/granted \
+		cue-lang/tap \
+		databricks/tap \
+		derailed/k9s \
+		kreuzwerker/taps \
+		nikitabobko/tap \
+		oktadeveloper/tap \
+		peonping/tap; do \
+		brew tap $$tap 2>/dev/null || true; \
+		brew trust $$tap 2>/dev/null || true; \
+	done
+else
+	@echo "Skipping brew trust (not macOS)."
+endif
+
 # Backwards-compatible alias
 .PHONY: setup-brewfile
 setup-brewfile: brew-bundle-profile

@@ -42,6 +42,7 @@ mac-setup: request-sudo \
 	setup-chezmoi \
 	install-flox \
 	install-direnv \
+	brew-trust-taps \
 	brew-bundle-default \
 	brew-bundle-profile \
 	clone-dev-setup \
@@ -90,6 +91,7 @@ mac-update: \
 	update-chezmoi \
 	update-repos \
 	update-oh-my-zsh-plugins \
+	brew-trust-taps \
 	brew-bundle-default \
 	brew-bundle-profile \
 	setup-claude-config \
