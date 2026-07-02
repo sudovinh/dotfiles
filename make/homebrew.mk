@@ -19,7 +19,8 @@ ifeq ($(UNAME_S), Darwin)
 		echo "Error: $(BREWFILE_DEFAULT) not found." && exit 1; \
 	fi
 	@echo "Running Brewfile (default)..."
-	@brew bundle --file=$(BREWFILE_DEFAULT)
+	@brew bundle --file=$(BREWFILE_DEFAULT) || \
+		echo "Warning: Some Brewfile (default) packages failed to install. Review output above."
 else
 	@echo "Skipping Brewfile (not macOS)."
 endif
@@ -28,7 +29,9 @@ endif
 brew-bundle-profile:
 ifeq ($(UNAME_S), Darwin)
 	@if [ -f "$(BREWFILE_PROFILE)" ]; then \
-		echo "Running Brewfile ($(PROFILE))..." && brew bundle --file=$(BREWFILE_PROFILE); \
+		echo "Running Brewfile ($(PROFILE))..." && \
+		(brew bundle --file=$(BREWFILE_PROFILE) || \
+		echo "Warning: Some Brewfile ($(PROFILE)) packages failed to install. Review output above."); \
 	else \
 		echo "No profile Brewfile at $(BREWFILE_PROFILE), skipping."; \
 	fi
