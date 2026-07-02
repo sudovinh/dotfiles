@@ -1,3 +1,4 @@
-autoload -U compinit; compinit
-
 eval "$(/opt/homebrew/bin/brew shellenv)"
+
+fpath=($HOMEBREW_PREFIX/share/zsh/functions $fpath)
+autoload -U compinit; compinit
