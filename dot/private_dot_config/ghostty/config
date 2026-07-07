@@ -1,5 +1,5 @@
 # Start herdr on launch (attaches to existing session or creates new one)
-command = herdr
+command = /opt/homebrew/bin/herdr
 
 # Theme
 theme = TokyoNight Moon
