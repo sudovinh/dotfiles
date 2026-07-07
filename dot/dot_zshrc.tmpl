@@ -131,8 +131,6 @@ ln -sf $DEV_DIR/claude/claude_settings.json $HOME/.claude/settings.json 2>/dev/n
 
 command -v kubectl &>/dev/null && source <(kubectl completion zsh | sed 's/kubectl/kc/g')
 command -v kubectl &>/dev/null && source <(kubectl completion zsh | sed 's/kubectl/k/g')
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-
 command -v direnv >/dev/null 2>&1 && eval "$(direnv hook zsh)"
 
 # Docker CLI completions (if Docker Desktop installed)
