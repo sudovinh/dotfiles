@@ -1,3 +1,6 @@
+# Start herdr on launch (attaches to existing session or creates new one)
+command = herdr
+
 # Theme
 theme = TokyoNight Moon
 
