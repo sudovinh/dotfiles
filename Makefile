@@ -12,6 +12,7 @@ include make/shell.mk
 include make/zellij.mk
 include make/flox.mk
 include make/claude.mk
+include make/herdr.mk
 include make/repos.mk
 include make/system.mk
 include make/macos.mk
@@ -50,7 +51,8 @@ mac-setup: request-sudo \
 	setup-zellij \
 	setup-flox-config \
 	setup-notes \
-	setup-claude-config
+	setup-claude-config \
+	setup-herdr
 	@echo ""
 	@echo "macOS setup complete."
 
@@ -68,7 +70,8 @@ linux-setup: \
 	setup-zellij \
 	setup-flox-config \
 	setup-notes \
-	setup-claude-config
+	setup-claude-config \
+	setup-herdr
 	@echo ""
 	@echo "Linux setup complete."
 
@@ -95,6 +98,7 @@ mac-update: \
 	brew-bundle-default \
 	brew-bundle-profile \
 	setup-claude-config \
+	setup-herdr \
 	refresh-flox-config
 	@echo "macOS update complete."
 
@@ -104,6 +108,7 @@ linux-update: \
 	update-repos \
 	update-oh-my-zsh-plugins \
 	setup-claude-config \
+	setup-herdr \
 	refresh-flox-config
 	@echo "Linux update complete."
 
@@ -133,6 +138,7 @@ help:
 	@echo "  setup-chezmoi          Init/update chezmoi dotfiles"
 	@echo "  setup-zellij           Verify Zellij installation"
 	@echo "  setup-claude-config    Link Claude settings + agents/commands"
+	@echo "  setup-herdr            Install Herdr agent integrations"
 	@echo "  setup-flox-config      Verify flox environment for active profile"
 	@echo "  refresh-flox-config    Update packages in the active flox profile"
 	@echo "  brew-bundle-default    Install default Brewfile"
