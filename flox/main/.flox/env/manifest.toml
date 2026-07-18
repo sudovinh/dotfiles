@@ -39,6 +39,7 @@ pre-commit.outputs = "all"
 nodejs_20.pkg-path = "nodejs_20"
 terraform.pkg-path = "terraform"
 _1password-cli.pkg-path = "_1password-cli"
+rsync.pkg-path = "rsync"
 
 
 ## Environment Variables ---------------------------------------------
