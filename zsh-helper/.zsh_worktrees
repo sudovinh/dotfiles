@@ -250,6 +250,64 @@ wt-inspect() {
   fi
 }
 
+# wt-clean-merged — remove worktrees whose branch has a merged PR (requires gh)
+wt-clean-merged() {
+  local root
+  root="$(_wt_bare_root)" || return 1
+
+  if ! command -v gh &>/dev/null; then
+    echo "Error: gh CLI not found (required to check PR merge status)" >&2
+    return 1
+  fi
+
+  local wt_path branch name pr_number
+  local -a merged_names
+
+  echo "Checking merged PRs for worktrees in $root..."
+  echo ""
+
+  while IFS= read -r line; do
+    case "$line" in
+      worktree\ *)
+        wt_path="${line#worktree }"
+        ;;
+      branch\ *)
+        branch="${line#branch refs/heads/}"
+        ;;
+      "")
+        if [[ -n "${wt_path:-}" ]] && [[ -n "${branch:-}" ]] && [[ -d "$wt_path" ]]; then
+          name="$(basename "$wt_path")"
+          if [[ "$name" != "main" ]]; then
+            pr_number="$(cd "$wt_path" && gh pr list --head "$branch" --state merged --json number --jq '.[0].number // empty' 2>/dev/null)"
+            if [[ -n "$pr_number" ]]; then
+              echo "  merged: $name (branch: $branch, PR #$pr_number)"
+              merged_names+=("$name")
+            fi
+          fi
+        fi
+        unset wt_path branch
+        ;;
+    esac
+  done < <(git -C "$root" worktree list --porcelain)
+
+  if [[ ${#merged_names[@]} -eq 0 ]]; then
+    echo "No worktrees with merged PRs found."
+    return 0
+  fi
+
+  echo ""
+  echo -n "Remove ${#merged_names[@]} worktree(s) above? (y/N) "
+  read -r response
+  if [[ ! "$response" =~ ^[Yy]$ ]]; then
+    echo "Aborted."
+    return 1
+  fi
+
+  for name in "${merged_names[@]}"; do
+    wt-rm "$name"
+  done
+}
+
 # cdwt — cd to the bare repo root
 cdwt() {
   local root
@@ -534,6 +592,9 @@ Worktree Management:
 
   wt-status                       Show rebase/merge/dirty status for all worktrees
                                      wt-status
+
+  wt-clean-merged                 Remove worktrees whose branch has a merged PR
+                                     wt-clean-merged
 
 Navigation:
   wt-cd <name>                    cd to a worktree by name
