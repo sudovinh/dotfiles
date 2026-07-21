@@ -261,7 +261,7 @@ wt-clean-merged() {
   fi
 
   local wt_path branch name pr_number
-  local -a merged_names
+  local -a merged_paths
 
   echo "Checking merged PRs for worktrees in $root..."
   echo ""
@@ -280,8 +280,8 @@ wt-clean-merged() {
           if [[ "$name" != "main" ]]; then
             pr_number="$(cd "$wt_path" && gh pr list --head "$branch" --state merged --json number --jq '.[0].number // empty' 2>/dev/null)"
             if [[ -n "$pr_number" ]]; then
-              echo "  merged: $name (branch: $branch, PR #$pr_number)"
-              merged_names+=("$name")
+              echo "  merged: $wt_path (branch: $branch, PR #$pr_number)"
+              merged_paths+=("$wt_path")
             fi
           fi
         fi
@@ -290,21 +290,40 @@ wt-clean-merged() {
     esac
   done < <(git -C "$root" worktree list --porcelain)
 
-  if [[ ${#merged_names[@]} -eq 0 ]]; then
+  if [[ ${#merged_paths[@]} -eq 0 ]]; then
     echo "No worktrees with merged PRs found."
     return 0
   fi
 
   echo ""
-  echo -n "Remove ${#merged_names[@]} worktree(s) above? (y/N) "
+  echo -n "Remove ${#merged_paths[@]} worktree(s) above? (y/N) "
   read -r response
   if [[ ! "$response" =~ ^[Yy]$ ]]; then
     echo "Aborted."
     return 1
   fi
 
-  for name in "${merged_names[@]}"; do
-    wt-rm "$name"
+  local branch_of
+  for wt_path in "${merged_paths[@]}"; do
+    if [[ -n "$(git -C "$wt_path" status --porcelain 2>/dev/null)" ]]; then
+      echo "Warning: '$wt_path' has uncommitted changes:"
+      git -C "$wt_path" status --short
+      echo -n "Remove anyway? (y/N) "
+      read -r response
+      if [[ ! "$response" =~ ^[Yy]$ ]]; then
+        echo "Skipped $wt_path."
+        continue
+      fi
+    fi
+
+    branch_of="$(git -C "$wt_path" branch --show-current 2>/dev/null)"
+
+    git -C "$root" worktree remove "$wt_path" --force
+    echo "Removed worktree: $wt_path"
+
+    if [[ -n "$branch_of" ]]; then
+      git -C "$root" branch -D "$branch_of" 2>/dev/null && echo "Deleted local branch: $branch_of"
+    fi
   done
 }
 
