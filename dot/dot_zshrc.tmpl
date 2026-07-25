@@ -121,13 +121,9 @@ source $DEV_DIR/zsh_work
 source $DEV_DIR/zsh_main
 {{- end }}
 
-# Claude Code settings - symlink profile-specific local settings
-{{ if eq .chezmoi.hostname "vinh-zip" }}
-ln -sf $DEV_DIR/claude_settings_local_work.json $HOME/.claude/settings.local.json 2>/dev/null
-{{ else }}
-ln -sf $DEV_DIR/claude_settings_local_main.json $HOME/.claude/settings.local.json 2>/dev/null
-{{- end }}
-ln -sf $DEV_DIR/claude/claude_settings.json $HOME/.claude/settings.json 2>/dev/null
+# Claude Code settings are materialized by `make setup-claude-config` (see make/claude.mk),
+# which the `claude` shell function runs on every invocation. Do not symlink them here:
+# a symlinked settings.json lets in-session changes drift straight into the repo.
 
 command -v kubectl &>/dev/null && source <(kubectl completion zsh | sed 's/kubectl/kc/g')
 command -v kubectl &>/dev/null && source <(kubectl completion zsh | sed 's/kubectl/k/g')
