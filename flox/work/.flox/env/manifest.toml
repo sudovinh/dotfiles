@@ -46,6 +46,8 @@ s5cmd.pkg-path = "s5cmd"
 git-filter-repo.pkg-path = "git-filter-repo"
 bash.pkg-path = "bash"
 nix.pkg-path = "nix"
+claude-code.pkg-path = "claude-code"
+claude-code.version = "2.1.201"
 
 
 ## Environment Variables ---------------------------------------------
