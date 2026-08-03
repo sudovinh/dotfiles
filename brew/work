@@ -2,7 +2,6 @@
 
 # Taps
 tap "argoproj/tap"
-tap "common-fate/granted"
 tap "cue-lang/tap"
 tap "databricks/tap"
 tap "derailed/k9s"
@@ -11,35 +10,20 @@ tap "kreuzwerker/taps"
 tap "oktadeveloper/tap"
 
 # CLI tools
-brew "bat"
-brew "cmctl"
 brew "lima"
 brew "colima", restart_service: :changed
-brew "coreutils"
 brew "docker-compose"
 brew "docker-credential-helper-ecr"
 cask "flox"
 brew "git"
-brew "unbound"
-brew "gnutls"
 brew "llvm"
 brew "logcli"
-brew "prometheus"
 brew "qemu"
-brew "thanos"
 brew "argoproj/tap/kubectl-argo-rollouts"
-brew "common-fate/granted/granted"
 brew "kreuzwerker/taps/m1-terraform-provider-helper"
 
 # Apps
 cask "okta"
 
-# Go tools
-go "github.com/brancz/gojsontoyaml"
-go "golang.org/x/tools/gopls"
-go "github.com/piqoni/hn-text"
-go "github.com/google/go-jsonnet/cmd/jsonnet"
+# Go tools (only those not available in the flox catalog remain here)
 go "github.com/ripta/mj"
-go "github.com/vmware-tanzu/sonobuoy"
-go "honnef.co/go/tools/cmd/staticcheck"
-go "go.k6.io/xk6/cmd/xk6"

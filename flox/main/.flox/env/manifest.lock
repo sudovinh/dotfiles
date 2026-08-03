@@ -12,6 +12,9 @@
       "awscli2": {
         "pkg-path": "awscli2"
       },
+      "checkmake": {
+        "pkg-path": "checkmake"
+      },
       "claude-code": {
         "pkg-path": "claude-code",
         "pkg-group": "claude-code",
@@ -102,6 +105,9 @@
       },
       "yq": {
         "pkg-path": "yq"
+      },
+      "zellij": {
+        "pkg-path": "zellij"
       }
     },
     "hook": {},
@@ -109,6 +115,126 @@
     "options": {}
   },
   "packages": [
+    {
+      "attr_path": "claude-code",
+      "broken": false,
+      "derivation": "/nix/store/a4dizbyxlcf9s6r98dlcdin0cc4s26p7-claude-code-2.1.201.drv",
+      "description": "Agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster",
+      "install_id": "claude-code",
+      "license": "Unfree",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d407951447dcd00442e97087bf374aad70c04cea",
+      "name": "claude-code-2.1.201",
+      "pname": "claude-code",
+      "rev": "d407951447dcd00442e97087bf374aad70c04cea",
+      "rev_count": 1027867,
+      "rev_date": "2026-07-05T04:06:12Z",
+      "scrape_date": "2026-07-06T03:12:55.152631Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": true,
+      "version": "2.1.201",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/djcx0bg3258x3sjwcjbf6kr7f0xlr0wq-claude-code-2.1.201"
+      },
+      "system": "aarch64-darwin",
+      "group": "claude-code",
+      "priority": 5
+    },
+    {
+      "attr_path": "claude-code",
+      "broken": false,
+      "derivation": "/nix/store/z8sidwsdz7fssg1inh0h1cdgsf0psm65-claude-code-2.1.201.drv",
+      "description": "Agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster",
+      "install_id": "claude-code",
+      "license": "Unfree",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d407951447dcd00442e97087bf374aad70c04cea",
+      "name": "claude-code-2.1.201",
+      "pname": "claude-code",
+      "rev": "d407951447dcd00442e97087bf374aad70c04cea",
+      "rev_count": 1027867,
+      "rev_date": "2026-07-05T04:06:12Z",
+      "scrape_date": "2026-07-06T03:41:21.780601Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": true,
+      "version": "2.1.201",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/fm203s00j5ignfgr4f05p2fc7ppmhfy0-claude-code-2.1.201"
+      },
+      "system": "aarch64-linux",
+      "group": "claude-code",
+      "priority": 5
+    },
+    {
+      "attr_path": "claude-code",
+      "broken": false,
+      "derivation": "/nix/store/94k99z7q71qjfhf0h1524c9i14b5a8jm-claude-code-2.1.201.drv",
+      "description": "Agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster",
+      "install_id": "claude-code",
+      "license": "Unfree",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d407951447dcd00442e97087bf374aad70c04cea",
+      "name": "claude-code-2.1.201",
+      "pname": "claude-code",
+      "rev": "d407951447dcd00442e97087bf374aad70c04cea",
+      "rev_count": 1027867,
+      "rev_date": "2026-07-05T04:06:12Z",
+      "scrape_date": "2026-07-06T04:09:00.518525Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": true,
+      "version": "2.1.201",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/23hm04zk9nn86835a2985p7a5pfd62bb-claude-code-2.1.201"
+      },
+      "system": "x86_64-darwin",
+      "group": "claude-code",
+      "priority": 5
+    },
+    {
+      "attr_path": "claude-code",
+      "broken": false,
+      "derivation": "/nix/store/igc75646h0srsbngdsqayh4swpkhnn04-claude-code-2.1.201.drv",
+      "description": "Agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster",
+      "install_id": "claude-code",
+      "license": "Unfree",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d407951447dcd00442e97087bf374aad70c04cea",
+      "name": "claude-code-2.1.201",
+      "pname": "claude-code",
+      "rev": "d407951447dcd00442e97087bf374aad70c04cea",
+      "rev_count": 1027867,
+      "rev_date": "2026-07-05T04:06:12Z",
+      "scrape_date": "2026-07-06T04:40:24.423963Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": true,
+      "version": "2.1.201",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/rjdsjk82kc3qyyizifdfbrnzwkdji3ib-claude-code-2.1.201"
+      },
+      "system": "x86_64-linux",
+      "group": "claude-code",
+      "priority": 5
+    },
     {
       "attr_path": "herdr",
       "broken": false,
@@ -586,6 +712,126 @@
       "outputs": {
         "dist": "/nix/store/97src0rsmbl5wfp9jnb4bdrjbcic6dbp-awscli2-2.34.24-dist",
         "out": "/nix/store/yfcx11pxh5ax692vvhpxmqc12dpq56f5-awscli2-2.34.24"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "checkmake",
+      "broken": false,
+      "derivation": "/nix/store/qiw4z14lnvrxlsij8zc1211rs025dv6x-checkmake-0.3.2.drv",
+      "description": "Linter and analyzer for Makefiles",
+      "install_id": "checkmake",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d233902339c02a9c334e7e593de68855ad26c4cb",
+      "name": "checkmake-0.3.2",
+      "pname": "checkmake",
+      "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
+      "rev_count": 998534,
+      "rev_date": "2026-05-15T18:21:44Z",
+      "scrape_date": "2026-05-17T07:05:50.732181Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.3.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/369dvm7fxlm7sfkxksxm2dnh2jv8lby9-checkmake-0.3.2"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "checkmake",
+      "broken": false,
+      "derivation": "/nix/store/vy1n7p0lwva0qlf7q431psz25rvwz1sd-checkmake-0.3.2.drv",
+      "description": "Linter and analyzer for Makefiles",
+      "install_id": "checkmake",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d233902339c02a9c334e7e593de68855ad26c4cb",
+      "name": "checkmake-0.3.2",
+      "pname": "checkmake",
+      "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
+      "rev_count": 998534,
+      "rev_date": "2026-05-15T18:21:44Z",
+      "scrape_date": "2026-05-17T07:33:29.107651Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.3.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/h55fkjymysgwgixc814pzrpz1gn2qdw7-checkmake-0.3.2"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "checkmake",
+      "broken": false,
+      "derivation": "/nix/store/63q51zjig1bl4maakqcgxzh7d5krwdrh-checkmake-0.3.2.drv",
+      "description": "Linter and analyzer for Makefiles",
+      "install_id": "checkmake",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d233902339c02a9c334e7e593de68855ad26c4cb",
+      "name": "checkmake-0.3.2",
+      "pname": "checkmake",
+      "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
+      "rev_count": 998534,
+      "rev_date": "2026-05-15T18:21:44Z",
+      "scrape_date": "2026-05-17T08:01:17.257171Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.3.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/a65jk49fl5jpvgnxmqdb8gf6yy8zaff4-checkmake-0.3.2"
+      },
+      "system": "x86_64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "checkmake",
+      "broken": false,
+      "derivation": "/nix/store/9wsk5zcradbd01lwrflfp3mw89q35llx-checkmake-0.3.2.drv",
+      "description": "Linter and analyzer for Makefiles",
+      "install_id": "checkmake",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d233902339c02a9c334e7e593de68855ad26c4cb",
+      "name": "checkmake-0.3.2",
+      "pname": "checkmake",
+      "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
+      "rev_count": 998534,
+      "rev_date": "2026-05-15T18:21:44Z",
+      "scrape_date": "2026-05-17T08:32:09.311603Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.3.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/i80paq0y20ii6zls33zcrvgibgp9xy2l-checkmake-0.3.2"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -4032,123 +4278,123 @@
       "priority": 5
     },
     {
-      "attr_path": "claude-code",
+      "attr_path": "zellij",
       "broken": false,
-      "derivation": "/nix/store/a4dizbyxlcf9s6r98dlcdin0cc4s26p7-claude-code-2.1.201.drv",
-      "description": "Agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster",
-      "install_id": "claude-code",
-      "license": "Unfree",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d407951447dcd00442e97087bf374aad70c04cea",
-      "name": "claude-code-2.1.201",
-      "pname": "claude-code",
-      "rev": "d407951447dcd00442e97087bf374aad70c04cea",
-      "rev_count": 1027867,
-      "rev_date": "2026-07-05T04:06:12Z",
-      "scrape_date": "2026-07-06T03:12:55.152631Z",
+      "derivation": "/nix/store/bw3pcwivqqz46bk517rkimflm4fq9sn5-zellij-0.44.3.drv",
+      "description": "Terminal workspace with batteries included",
+      "install_id": "zellij",
+      "license": "[ MIT ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d233902339c02a9c334e7e593de68855ad26c4cb",
+      "name": "zellij-0.44.3",
+      "pname": "zellij",
+      "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
+      "rev_count": 998534,
+      "rev_date": "2026-05-15T18:21:44Z",
+      "scrape_date": "2026-05-17T07:08:37.272906Z",
       "stabilities": [
         "staging",
         "unstable"
       ],
-      "unfree": true,
-      "version": "2.1.201",
+      "unfree": false,
+      "version": "0.44.3",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/djcx0bg3258x3sjwcjbf6kr7f0xlr0wq-claude-code-2.1.201"
+        "out": "/nix/store/yxmb4dhwa6hcw93qq5yp5ramcfs0lzlf-zellij-0.44.3"
       },
       "system": "aarch64-darwin",
-      "group": "claude-code",
+      "group": "toplevel",
       "priority": 5
     },
     {
-      "attr_path": "claude-code",
+      "attr_path": "zellij",
       "broken": false,
-      "derivation": "/nix/store/z8sidwsdz7fssg1inh0h1cdgsf0psm65-claude-code-2.1.201.drv",
-      "description": "Agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster",
-      "install_id": "claude-code",
-      "license": "Unfree",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d407951447dcd00442e97087bf374aad70c04cea",
-      "name": "claude-code-2.1.201",
-      "pname": "claude-code",
-      "rev": "d407951447dcd00442e97087bf374aad70c04cea",
-      "rev_count": 1027867,
-      "rev_date": "2026-07-05T04:06:12Z",
-      "scrape_date": "2026-07-06T03:41:21.780601Z",
+      "derivation": "/nix/store/xz991jn7g2al4dxhqdzbckdw4zszzd44-zellij-0.44.3.drv",
+      "description": "Terminal workspace with batteries included",
+      "install_id": "zellij",
+      "license": "[ MIT ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d233902339c02a9c334e7e593de68855ad26c4cb",
+      "name": "zellij-0.44.3",
+      "pname": "zellij",
+      "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
+      "rev_count": 998534,
+      "rev_date": "2026-05-15T18:21:44Z",
+      "scrape_date": "2026-05-17T07:37:09.951454Z",
       "stabilities": [
         "staging",
         "unstable"
       ],
-      "unfree": true,
-      "version": "2.1.201",
+      "unfree": false,
+      "version": "0.44.3",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/fm203s00j5ignfgr4f05p2fc7ppmhfy0-claude-code-2.1.201"
+        "out": "/nix/store/p4fv9kir5l6dm3pwkpcp5p9yn4k3bppy-zellij-0.44.3"
       },
       "system": "aarch64-linux",
-      "group": "claude-code",
+      "group": "toplevel",
       "priority": 5
     },
     {
-      "attr_path": "claude-code",
+      "attr_path": "zellij",
       "broken": false,
-      "derivation": "/nix/store/94k99z7q71qjfhf0h1524c9i14b5a8jm-claude-code-2.1.201.drv",
-      "description": "Agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster",
-      "install_id": "claude-code",
-      "license": "Unfree",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d407951447dcd00442e97087bf374aad70c04cea",
-      "name": "claude-code-2.1.201",
-      "pname": "claude-code",
-      "rev": "d407951447dcd00442e97087bf374aad70c04cea",
-      "rev_count": 1027867,
-      "rev_date": "2026-07-05T04:06:12Z",
-      "scrape_date": "2026-07-06T04:09:00.518525Z",
+      "derivation": "/nix/store/j5nszg7ib9msvq7zkf3gkaga35y0ssg5-zellij-0.44.3.drv",
+      "description": "Terminal workspace with batteries included",
+      "install_id": "zellij",
+      "license": "[ MIT ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d233902339c02a9c334e7e593de68855ad26c4cb",
+      "name": "zellij-0.44.3",
+      "pname": "zellij",
+      "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
+      "rev_count": 998534,
+      "rev_date": "2026-05-15T18:21:44Z",
+      "scrape_date": "2026-05-17T08:04:14.747183Z",
       "stabilities": [
         "staging",
         "unstable"
       ],
-      "unfree": true,
-      "version": "2.1.201",
+      "unfree": false,
+      "version": "0.44.3",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/23hm04zk9nn86835a2985p7a5pfd62bb-claude-code-2.1.201"
+        "out": "/nix/store/zdmkiycqmqkifh5h5myr54ila3awl28x-zellij-0.44.3"
       },
       "system": "x86_64-darwin",
-      "group": "claude-code",
+      "group": "toplevel",
       "priority": 5
     },
     {
-      "attr_path": "claude-code",
+      "attr_path": "zellij",
       "broken": false,
-      "derivation": "/nix/store/igc75646h0srsbngdsqayh4swpkhnn04-claude-code-2.1.201.drv",
-      "description": "Agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster",
-      "install_id": "claude-code",
-      "license": "Unfree",
-      "locked_url": "https://github.com/flox/nixpkgs?rev=d407951447dcd00442e97087bf374aad70c04cea",
-      "name": "claude-code-2.1.201",
-      "pname": "claude-code",
-      "rev": "d407951447dcd00442e97087bf374aad70c04cea",
-      "rev_count": 1027867,
-      "rev_date": "2026-07-05T04:06:12Z",
-      "scrape_date": "2026-07-06T04:40:24.423963Z",
+      "derivation": "/nix/store/g2nn18lnibgjq375jhdza33djq6nxlwq-zellij-0.44.3.drv",
+      "description": "Terminal workspace with batteries included",
+      "install_id": "zellij",
+      "license": "[ MIT ]",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d233902339c02a9c334e7e593de68855ad26c4cb",
+      "name": "zellij-0.44.3",
+      "pname": "zellij",
+      "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
+      "rev_count": 998534,
+      "rev_date": "2026-05-15T18:21:44Z",
+      "scrape_date": "2026-05-17T08:36:10.106294Z",
       "stabilities": [
         "staging",
         "unstable"
       ],
-      "unfree": true,
-      "version": "2.1.201",
+      "unfree": false,
+      "version": "0.44.3",
       "outputs_to_install": [
         "out"
       ],
       "outputs": {
-        "out": "/nix/store/rjdsjk82kc3qyyizifdfbrnzwkdji3ib-claude-code-2.1.201"
+        "out": "/nix/store/0pcbf5dgzgqzcz0ia1rv1fphyshg2pg2-zellij-0.44.3"
       },
       "system": "x86_64-linux",
-      "group": "claude-code",
+      "group": "toplevel",
       "priority": 5
     }
   ]
