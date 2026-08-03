@@ -63,6 +63,7 @@ go-jsonnet.pkg-path = "go-jsonnet"
 go-tools.pkg-path = "go-tools"
 hn-text.pkg-path = "hn-text"
 sonobuoy.pkg-path = "sonobuoy"
+argo-rollouts.pkg-path = "argo-rollouts"
 
 
 ## Environment Variables ---------------------------------------------
@@ -144,12 +145,13 @@ on-activate = '''
 
 ## Other Environment Options -----------------------------------------
 [options]
-# Systems that environment is compatible with
-# systems = [
-#   "aarch64-darwin",
-#   "aarch64-linux",
-#   "x86_64-darwin",
-#   "x86_64-linux",
-# ]
+# Systems that environment is compatible with.
+# x86_64-darwin (Intel Mac) intentionally omitted — not used, and some
+# packages (cloudquery, argo-rollouts) lack an x86_64-darwin build.
+systems = [
+  "aarch64-darwin",
+  "aarch64-linux",
+  "x86_64-linux",
+]
 # Uncomment to disable CUDA detection.
 # cuda-detection = false

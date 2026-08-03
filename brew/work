@@ -1,7 +1,6 @@
 # Work-specific packages (additions to brew/default)
 
 # Taps
-tap "argoproj/tap"
 tap "cue-lang/tap"
 tap "databricks/tap"
 tap "derailed/k9s"
@@ -19,7 +18,6 @@ brew "git"
 brew "llvm"
 brew "logcli"
 brew "qemu"
-brew "argoproj/tap/kubectl-argo-rollouts"
 brew "kreuzwerker/taps/m1-terraform-provider-helper"
 
 # Apps

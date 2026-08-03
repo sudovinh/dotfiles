@@ -45,6 +45,9 @@ claude-code.version = "2.1.201"
 claude-code.pkg-group = "claude-code"
 checkmake.pkg-path = "checkmake"
 zellij.pkg-path = "zellij"
+# isolated group: cloudquery's deps conflict with the toplevel group
+cloudquery.pkg-path = "cloudquery"
+cloudquery.pkg-group = "cloudquery"
 
 
 ## Environment Variables ---------------------------------------------
@@ -120,12 +123,13 @@ zellij.pkg-path = "zellij"
 
 ## Other Environment Options -----------------------------------------
 [options]
-# Systems that environment is compatible with
-# systems = [
-#   "aarch64-darwin",
-#   "aarch64-linux",
-#   "x86_64-darwin",
-#   "x86_64-linux",
-# ]
+# Systems that environment is compatible with.
+# x86_64-darwin (Intel Mac) intentionally omitted — not used, and some
+# packages (cloudquery, argo-rollouts) lack an x86_64-darwin build.
+systems = [
+  "aarch64-darwin",
+  "aarch64-linux",
+  "x86_64-linux",
+]
 # Uncomment to disable CUDA detection.
 # cuda-detection = false

@@ -44,9 +44,6 @@ brew-trust-taps:
 ifeq ($(UNAME_S), Darwin)
 	@echo "Trusting third-party Homebrew taps..."
 	@for tap in \
-		argoproj/tap \
-		cloudquery/tap \
-		common-fate/granted \
 		cue-lang/tap \
 		databricks/tap \
 		derailed/k9s \
