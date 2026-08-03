@@ -721,6 +721,15 @@ function ecr-login() {
 }
 
 function claude() {
+  # Force the flox-managed CLI. Refuse to run any other install (native
+  # installer at ~/.local/bin, brew, etc.) that might shadow it.
+  local bin
+  bin=$(whence -p claude 2>/dev/null)
+  if [[ "$bin" != *"/.flox/run/"*"/bin/claude" ]]; then
+    echo "claude: refusing non-flox binary: ${bin:-<not found>}" >&2
+    echo "claude: activate the flox env (herdr should do this) — check 'flox list'." >&2
+    return 1
+  fi
   [[ -z "${CLAUDE_CODE_EXECPATH}" ]] && make -C ~/.local/share/chezmoi setup-claude-config 2>/dev/null
   command claude "$@"
 }
