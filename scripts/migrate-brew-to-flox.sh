@@ -46,15 +46,19 @@ BREW_TAPS=( cloudquery/tap argoproj/tap common-fate/granted )
 GOBIN="${GOBIN:-${GOPATH:-$HOME/go}/bin}"
 GO_BINS=( gojsontoyaml gopls hn-text jsonnet sonobuoy staticcheck xk6 )
 
-# --- 1. Rebuild the active Flox environment from the committed lock -----
+# --- 1. Pre-build the active Flox environment from the committed lock ---
+# Best-effort only: herdr already keeps the env activated in "run" mode in
+# your open shells, and the new packages materialize automatically the next
+# time you open a terminal. This step just pre-warms the build. Force "run"
+# mode so it coexists with herdr's activations, and never abort on failure.
 active_env="${FLOX_ENV_DESCRIPTION:-}"
 if [[ -n "$active_env" && -d "$REPO_ROOT/flox/$active_env/.flox" ]]; then
-	echo "==> Building active flox env: $active_env"
-	flox activate -d "$REPO_ROOT/flox/$active_env" -- true
+	echo "==> Pre-building active flox env: $active_env"
+	flox activate -d "$REPO_ROOT/flox/$active_env" --mode run -- true \
+		|| echo "    (pre-build skipped; herdr will build it in your next new shell)"
 else
-	echo "No active flox env detected (FLOX_ENV_DESCRIPTION is empty)."
-	echo "    Run this from a shell where herdr activated your profile, or run"
-	echo "    'flox activate -d $REPO_ROOT/flox/<profile> -- true' manually."
+	echo "No active flox env detected (FLOX_ENV_DESCRIPTION is empty) — skipping"
+	echo "    pre-build; herdr builds it when you open a terminal in the profile."
 fi
 
 # --- 2. Uninstall migrated brew formulae (only if installed) -----------
