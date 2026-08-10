@@ -71,4 +71,19 @@ setup-claude-config:
 			done; \
 		fi; \
 	done
+	@# Symlink skills (each skill is a directory, not a flat file)
+	@echo "Setting up custom skills..."
+	@mkdir -p "$(CLAUDE_CONFIG_DIR)/skills"
+	@find "$(CLAUDE_CONFIG_DIR)/skills" -maxdepth 1 -type l -delete
+	@for dir in \
+		"$(CHEZMOI_DIR)/claude/skills" \
+		"$(DEV_SETUP_CLAUDE_DIR)/skills" \
+		"$(DEV_SETUP_CLAUDE_DIR)/skills_$(PROFILE)"; do \
+		if [ -d "$$dir" ]; then \
+			for skill in "$$dir"/*/; do \
+				[ -d "$$skill" ] || continue; \
+				ln -sfn "$${skill%/}" "$(CLAUDE_CONFIG_DIR)/skills/$$(basename $$skill)"; \
+			done; \
+		fi; \
+	done
 	@echo "Claude config setup complete."
