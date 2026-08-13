@@ -114,4 +114,5 @@ Copy in Zellij:
 ## Flox
 alias flox-update='flox upgrade'
 alias flox-list='flox list'
+alias flox-cli-upgrade='make -C ~/.local/share/chezmoi upgrade-flox'
 alias flox-help='_flox_help'

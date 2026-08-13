@@ -112,6 +112,7 @@ make setup-shell           Install Zsh + Oh My Zsh
 make setup-tmux            Install TPM and tmux plugins
 make setup-flox-config     Verify flox environment for active profile
 make refresh-flox-config   Update flox packages
+make upgrade-flox          Upgrade the flox CLI itself
 make brew-bundle-default   Install default Brewfile
 make brew-bundle-profile   Install profile Brewfile
 make setup-claude-config   Link Claude settings + agents/commands

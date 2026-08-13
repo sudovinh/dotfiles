@@ -3,28 +3,23 @@
 # ============================================
 
 .PHONY: install-flox
-install-flox: ## Install flox CLI (via brew cask on macOS, install script on Linux); set FLOX_VERSION in .env to pin a version
+install-flox: ## Install flox CLI (official .pkg installer on macOS, apt repo on Linux); set FLOX_VERSION in .env to pin a version
 	@export PATH="/opt/homebrew/bin:$$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$$PATH"; \
 	if command -v flox > /dev/null 2>&1; then \
 		echo "Flox ready."; \
-	elif command -v brew > /dev/null 2>&1; then \
-		if [ -n "$(FLOX_VERSION)" ]; then \
-			brew install --cask flox@$(FLOX_VERSION) 2>/dev/null || true; \
-		else \
-			brew install --cask flox 2>/dev/null || true; \
-		fi; \
-		FLOX_PKG=$$(find /opt/homebrew/Caskroom/flox -name "*.pkg" 2>/dev/null | sort -V | tail -1); \
-		if [ -z "$$FLOX_PKG" ]; then \
-			echo "ERROR: No flox pkg found after brew install" && exit 1; \
-		fi; \
+	elif [ "$(UNAME_S)" = "Darwin" ]; then \
+		echo "Installing Flox via official pkg installer ($(FLOX_OSX_PKG_URL))..."; \
+		FLOX_PKG=$$(mktemp "$${TMPDIR:-/tmp}/flox-install-pkg.XXXXXXXX.pkg"); \
+		curl -fsSL -o "$$FLOX_PKG" "$(FLOX_OSX_PKG_URL)" || exit 1; \
 		echo "Running pkg installer (requires sudo)..."; \
 		sudo installer -pkg "$$FLOX_PKG" -target / || exit 1; \
+		rm -f "$$FLOX_PKG"; \
 		export PATH="/opt/homebrew/bin:$$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$$PATH"; \
-		if ! command -v flox > /dev/null 2>&1; then \
-			echo "pkg installed nix; installing flox package via nix..."; \
-			/nix/var/nix/profiles/default/bin/nix --extra-experimental-features 'nix-command flakes' profile install --accept-flake-config github:flox/flox || exit 1; \
+		if command -v flox > /dev/null 2>&1; then \
+			echo "Flox ready."; \
+		else \
+			echo "ERROR: flox not on PATH after pkg install; open a new shell and re-run." && exit 1; \
 		fi; \
-		echo "Flox ready."; \
 	else \
 		echo "Installing Flox via apt repository (downloads.flox.dev)..."; \
 		wget -qO - "$(FLOX_DEB_KEYRING_URL)" | sudo tee /usr/share/keyrings/flox-archive-keyring.gpg >/dev/null || exit 1; \
@@ -42,6 +37,28 @@ install-flox: ## Install flox CLI (via brew cask on macOS, install script on Lin
 			echo "ERROR: flox not on PATH after install; open a new shell and re-run." && exit 1; \
 		fi; \
 	fi
+
+.PHONY: upgrade-flox
+upgrade-flox: ## Upgrade the flox CLI itself (official .pkg installer on macOS, apt on Linux); set FLOX_VERSION in .env to pin a version
+	@export PATH="/opt/homebrew/bin:$$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$$PATH"; \
+	if [ "$(UNAME_S)" = "Darwin" ]; then \
+		echo "Upgrading Flox via official pkg installer ($(FLOX_OSX_PKG_URL))..."; \
+		FLOX_PKG=$$(mktemp "$${TMPDIR:-/tmp}/flox-upgrade-pkg.XXXXXXXX.pkg"); \
+		curl -fsSL -o "$$FLOX_PKG" "$(FLOX_OSX_PKG_URL)" || exit 1; \
+		echo "Running pkg installer (requires sudo)..."; \
+		sudo installer -pkg "$$FLOX_PKG" -target / || exit 1; \
+		rm -f "$$FLOX_PKG"; \
+	else \
+		echo "Upgrading Flox via apt..."; \
+		sudo apt-get update || exit 1; \
+		if [ -n "$(FLOX_VERSION)" ]; then \
+			sudo apt-get install -y flox=$(FLOX_VERSION) || exit 1; \
+		else \
+			sudo apt-get install --only-upgrade -y flox || exit 1; \
+		fi; \
+	fi; \
+	export PATH="/opt/homebrew/bin:$$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$$PATH"; \
+	flox --version
 
 .PHONY: install-direnv
 install-direnv: ## Install direnv if not present

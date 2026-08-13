@@ -1226,6 +1226,7 @@ function _flox_help() {
   echo "Flox Aliases:
   flox-update          Upgrade packages in active env (flox upgrade)
   flox-list            List installed packages in active env (flox list)
+  flox-cli-upgrade     Upgrade the flox CLI itself (make upgrade-flox)
   floxswitch           Interactive env switcher (fzf)
 
 Flox Commands:

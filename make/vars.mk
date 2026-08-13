@@ -21,6 +21,7 @@ CONFIGS_DIR     := $(DOTFILES_DIR)/configs
 DIRENV_INSTALL_SCRIPT := https://direnv.net/install.sh
 FLOX_DEB_KEYRING_URL  := https://downloads.flox.dev/by-env/stable/deb/flox-archive-keyring.gpg
 FLOX_DEB_REPO_URL     := https://downloads.flox.dev/by-env/stable/deb/
+FLOX_OSX_BASE_URL     := https://downloads.flox.dev/by-env/stable/osx
 FLOX_VERSION          ?=
 DOTFILE_SCRIPTS := $(DOTFILES_DIR)/scripts
 HOMEBREW_URL    := https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
@@ -35,6 +36,17 @@ ZSH_PLUGIN_URLS := \
 	"https://github.com/zsh-users/zsh-syntax-highlighting.git"
 UNAME_S         := $(shell uname -s)
 UNAME_M         := $(shell uname -m)
+# Flox's official macOS pkg names encode the Nix system triple, not `uname -m`.
+ifeq ($(UNAME_M), arm64)
+FLOX_DARWIN_ARCH := aarch64-darwin
+else
+FLOX_DARWIN_ARCH := x86_64-darwin
+endif
+ifeq ($(FLOX_VERSION),)
+FLOX_OSX_PKG_URL := $(FLOX_OSX_BASE_URL)/flox.$(FLOX_DARWIN_ARCH).pkg
+else
+FLOX_OSX_PKG_URL := $(FLOX_OSX_BASE_URL)/flox-$(FLOX_VERSION).$(FLOX_DARWIN_ARCH).pkg
+endif
 # Orion browser (Linux Flatpak; macOS uses the brew cask). Version-pinned —
 # no "latest" URL exists, so bump ORION_VERSION (or set it in .env) on updates.
 ORION_VERSION   ?= 0.3.0

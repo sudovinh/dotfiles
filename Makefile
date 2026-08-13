@@ -141,6 +141,7 @@ help:
 	@echo "  setup-herdr            Install Herdr agent integrations"
 	@echo "  setup-flox-config      Verify flox environment for active profile"
 	@echo "  refresh-flox-config    Update packages in the active flox profile"
+	@echo "  upgrade-flox           Upgrade the flox CLI itself"
 	@echo "  brew-bundle-default    Install default Brewfile"
 	@echo "  brew-bundle-profile    Install profile Brewfile"
 	@echo "  setup-macos-defaults   Apply macOS system preferences"
