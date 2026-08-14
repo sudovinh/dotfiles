@@ -46,6 +46,7 @@ mac-setup: request-sudo \
 	brew-trust-taps \
 	brew-bundle-default \
 	brew-bundle-profile \
+	brew-reconcile \
 	clone-dev-setup \
 	setup-shell \
 	setup-zellij \
@@ -97,6 +98,7 @@ mac-update: \
 	brew-trust-taps \
 	brew-bundle-default \
 	brew-bundle-profile \
+	brew-reconcile \
 	setup-claude-config \
 	setup-herdr \
 	refresh-flox-config
@@ -144,6 +146,7 @@ help:
 	@echo "  upgrade-flox           Upgrade the flox CLI itself"
 	@echo "  brew-bundle-default    Install default Brewfile"
 	@echo "  brew-bundle-profile    Install profile Brewfile"
+	@echo "  brew-reconcile         Interactively reconcile installed brew packages vs Brewfiles"
 	@echo "  setup-macos-defaults   Apply macOS system preferences"
 	@echo "  setup-shell            Install/configure Zsh + Oh My Zsh"
 	@echo "  setup-notes            Clone Obsidian notes repo"

@@ -58,6 +58,14 @@ else
 	@echo "Skipping brew trust (not macOS)."
 endif
 
+.PHONY: brew-reconcile
+brew-reconcile: ## Interactively reconcile installed brew formulae/casks against the Brewfiles
+ifeq ($(UNAME_S), Darwin)
+	@$(DOTFILE_SCRIPTS)/reconcile-brew.sh $(PROFILE) $(BREWFILE_DEFAULT) $(BREWFILE_PROFILE)
+else
+	@echo "Skipping brew reconcile (not macOS)."
+endif
+
 # Backwards-compatible alias
 .PHONY: setup-brewfile
 setup-brewfile: brew-bundle-profile

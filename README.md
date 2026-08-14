@@ -115,6 +115,7 @@ make refresh-flox-config   Update flox packages
 make upgrade-flox          Upgrade the flox CLI itself
 make brew-bundle-default   Install default Brewfile
 make brew-bundle-profile   Install profile Brewfile
+make brew-reconcile        Interactively reconcile installed brew packages vs Brewfiles
 make setup-claude-config   Link Claude settings + agents/commands
 make setup-macos-defaults  Apply macOS system preferences
 make setup-notes           Clone Obsidian notes repo

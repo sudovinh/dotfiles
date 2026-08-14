@@ -13,7 +13,6 @@ brew "lima"
 brew "colima", restart_service: :changed
 brew "docker-compose"
 brew "docker-credential-helper-ecr"
-cask "flox"
 brew "git"
 brew "llvm"
 brew "logcli"
@@ -21,7 +20,7 @@ brew "qemu"
 brew "kreuzwerker/taps/m1-terraform-provider-helper"
 
 # Apps
-cask "okta"
+cask "oktadeveloper/tap/okta"
 
 # Go tools (only those not available in the flox catalog remain here)
 go "github.com/ripta/mj"
