@@ -1,6 +1,7 @@
 tap "homebrew/bundle"
 tap "nikitabobko/tap"
 tap "peonping/tap"
+brew "bun"
 brew "chezmoi"
 brew "docker"
 brew "herdr"

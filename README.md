@@ -91,6 +91,16 @@ Activated automatically in your shell via `flox activate --dir`. Add packages by
 ### Claude Code
 Links settings and MCP server configs from `dev_setup` (if configured). Safe no-op if `DEV_SETUP_REPO` is not set.
 
+### Herdr
+Installs the Claude integration and any plugins listed in `HERDR_PLUGINS` (`make/herdr.mk`) via `herdr plugin install`. Add a plugin by adding its repo slug to that list.
+
+Currently installed: [`iurysza/herdr-tab-smart-rename`](https://github.com/iurysza/herdr-tab-smart-rename). Its AI-powered tab naming needs a one-time manual setup (API key is a secret, so it's not automated):
+```bash
+herdr plugin action invoke configure-ai --plugin tab-smart-rename   # opens provider.env — add your API key
+herdr plugin action invoke check-ai --plugin tab-smart-rename       # validate
+herdr plugin action invoke start --plugin tab-smart-rename          # start the worker
+```
+
 ### macOS Defaults
 Applies sensible system preferences (Finder, Dock, keyboard, screenshots). Override any setting in `.env`:
 ```bash
@@ -117,6 +127,8 @@ make brew-bundle-default   Install default Brewfile
 make brew-bundle-profile   Install profile Brewfile
 make brew-reconcile        Interactively reconcile installed brew packages vs Brewfiles
 make setup-claude-config   Link Claude settings + agents/commands
+make setup-herdr           Install Herdr agent integrations
+make install-herdr-plugins Install Herdr plugins (edit HERDR_PLUGINS in make/herdr.mk)
 make setup-macos-defaults  Apply macOS system preferences
 make setup-notes           Clone Obsidian notes repo
 make clone-dev-setup       Clone private dev_setup repo
