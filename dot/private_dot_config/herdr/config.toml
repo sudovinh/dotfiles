@@ -28,7 +28,7 @@ command = "tab-smart-rename.rename-now"
 description = "smart rename current tab"
 
 [[keys.command]]
-key = "prefix+alt+t"
+key = "prefix+option+t"
 type = "plugin_action"
 command = "tab-smart-rename.rename-all"
 description = "force smart rename all tabs"
