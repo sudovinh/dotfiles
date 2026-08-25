@@ -47,10 +47,16 @@ setup-claude-config:
 			echo "Warning: $$MCP_SRC or $$CLAUDE_USER_CFG not found, skipping MCP server merge."; \
 		fi; \
 	fi
-	@# Symlink global memory (CLAUDE.md)
+	@# Generate global memory (CLAUDE.md) from base + profile-specific overlay
 	@if [ -n "$(DEV_SETUP_REPO)" ] && [ -f "$(DEV_SETUP_CLAUDE_DIR)/claude_memory.md" ]; then \
-		echo "Symlinking CLAUDE.md from $(DEV_SETUP_CLAUDE_DIR)/claude_memory.md..."; \
-		ln -sf "$(DEV_SETUP_CLAUDE_DIR)/claude_memory.md" "$(CLAUDE_CONFIG_DIR)/CLAUDE.md"; \
+		echo "Generating CLAUDE.md from $(DEV_SETUP_CLAUDE_DIR)/claude_memory.md + profile overlay..."; \
+		rm -f "$(CLAUDE_CONFIG_DIR)/CLAUDE.md"; \
+		PROFILE_MEMORY="$(DEV_SETUP_CLAUDE_DIR)/claude_memory_$(PROFILE).md"; \
+		if [ -f "$$PROFILE_MEMORY" ]; then \
+			cat "$(DEV_SETUP_CLAUDE_DIR)/claude_memory.md" "$$PROFILE_MEMORY" > "$(CLAUDE_CONFIG_DIR)/CLAUDE.md"; \
+		else \
+			cp "$(DEV_SETUP_CLAUDE_DIR)/claude_memory.md" "$(CLAUDE_CONFIG_DIR)/CLAUDE.md"; \
+		fi; \
 	fi
 	@# Symlink agents and commands
 	@echo "Setting up custom agents and commands..."
