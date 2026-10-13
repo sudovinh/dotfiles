@@ -6,7 +6,11 @@
 # ~/.claude/skills, so they survive the symlink cleanup below).
 # obra/superpowers is NOT here: it's installed as the official Claude Code
 # plugin (superpowers@claude-plugins-official).
-SKILL_PACKAGES := DietrichGebert/ponytail q-qp-p/pstack kunchenguid/no-mistakes vercel-labs/skills latent-spaces/brag
+SKILL_PACKAGES := DietrichGebert/ponytail q-qp-p/pstack kunchenguid/no-mistakes vercel-labs/skills
+# Personal-profile-only packages (skipped and cleaned up on PROFILE=work).
+# When adding one, also add its installed skill dirs to MAIN_ONLY_SKILL_DIRS.
+SKILL_PACKAGES_MAIN := latent-spaces/brag
+MAIN_ONLY_SKILL_DIRS := brag brag-slim
 
 .PHONY: setup-claude-config
 setup-claude-config:
@@ -126,7 +130,16 @@ setup-claude-config:
 	@# non-interactive); without it the CLI tries to render prompts and fails
 	@# when output is redirected. Errors are logged and shown on failure.
 	@if command -v npx >/dev/null 2>&1; then \
-		for pkg in $(SKILL_PACKAGES); do \
+		PKGS="$(SKILL_PACKAGES)"; \
+		if [ "$(PROFILE)" = "main" ]; then \
+			PKGS="$$PKGS $(SKILL_PACKAGES_MAIN)"; \
+		else \
+			echo "Skipping personal-only skill packages (profile '$(PROFILE)')."; \
+			for d in $(MAIN_ONLY_SKILL_DIRS); do \
+				rm -rf "$(CLAUDE_CONFIG_DIR)/skills/$$d"; \
+			done; \
+		fi; \
+		for pkg in $$PKGS; do \
 			echo "Installing skills from $$pkg..."; \
 			if ! CLAUDECODE=1 npx -y skills@latest add "$$pkg" -g -y -a claude-code -s '*' >/tmp/skills-add.log 2>&1; then \
 				echo "Warning: skills add $$pkg failed:"; \
