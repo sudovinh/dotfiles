@@ -2,6 +2,12 @@
 # CLAUDE
 # ============================================
 
+# Skill packages installed globally via the skills CLI (copied into
+# ~/.claude/skills, so they survive the symlink cleanup below).
+# obra/superpowers is NOT here: it's installed as the official Claude Code
+# plugin (superpowers@claude-plugins-official).
+SKILL_PACKAGES := DietrichGebert/ponytail q-qp-p/pstack kunchenguid/no-mistakes vercel-labs/skills
+
 .PHONY: setup-claude-config
 setup-claude-config:
 	@echo "Setting up Claude Code configuration..."
@@ -97,4 +103,28 @@ setup-claude-config:
 			done; \
 		fi; \
 	done
+	@# Refresh the REA workflow skill in ~/.claude/skills (MCP entry lives in claude_mcp_<profile>.json).
+	@# Setup exits nonzero over optional Hopper/pinning advice even when the skill installs,
+	@# so verify the skill directory instead of the exit code.
+	@if command -v npx >/dev/null 2>&1; then \
+		echo "Refreshing REA skill..."; \
+		npx -y rea-agents@latest setup --skill-client claude_code --yes --json >/dev/null 2>&1 || true; \
+		if [ -d "$(CLAUDE_CONFIG_DIR)/skills/reverse-engineer-anything" ]; then \
+			echo "REA skill installed."; \
+		else \
+			echo "Warning: REA skill missing after refresh (offline?)."; \
+		fi; \
+	else \
+		echo "Warning: npx not found, skipping REA skill refresh."; \
+	fi
+	@# Install/refresh skill packages from the open ecosystem (see SKILL_PACKAGES above)
+	@if command -v npx >/dev/null 2>&1; then \
+		for pkg in $(SKILL_PACKAGES); do \
+			echo "Installing skills from $$pkg..."; \
+			npx -y skills@latest add "$$pkg" -g -y -a claude-code -s '*' >/dev/null 2>&1 \
+				|| echo "Warning: skills add $$pkg failed (offline?), skipping."; \
+		done; \
+	else \
+		echo "Warning: npx not found, skipping skill package install."; \
+	fi
 	@echo "Claude config setup complete."
