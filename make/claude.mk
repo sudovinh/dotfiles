@@ -6,7 +6,7 @@
 # ~/.claude/skills, so they survive the symlink cleanup below).
 # obra/superpowers is NOT here: it's installed as the official Claude Code
 # plugin (superpowers@claude-plugins-official).
-SKILL_PACKAGES := DietrichGebert/ponytail q-qp-p/pstack kunchenguid/no-mistakes vercel-labs/skills
+SKILL_PACKAGES := DietrichGebert/ponytail q-qp-p/pstack kunchenguid/no-mistakes vercel-labs/skills latent-spaces/brag
 
 .PHONY: setup-claude-config
 setup-claude-config:
