@@ -117,12 +117,17 @@ setup-claude-config:
 	else \
 		echo "Warning: npx not found, skipping REA skill refresh."; \
 	fi
-	@# Install/refresh skill packages from the open ecosystem (see SKILL_PACKAGES above)
+	@# Install/refresh skill packages from the open ecosystem (see SKILL_PACKAGES above).
+	@# CLAUDECODE=1 makes the skills CLI treat this as an agent run (fully
+	@# non-interactive); without it the CLI tries to render prompts and fails
+	@# when output is redirected. Errors are logged and shown on failure.
 	@if command -v npx >/dev/null 2>&1; then \
 		for pkg in $(SKILL_PACKAGES); do \
 			echo "Installing skills from $$pkg..."; \
-			npx -y skills@latest add "$$pkg" -g -y -a claude-code -s '*' >/dev/null 2>&1 \
-				|| echo "Warning: skills add $$pkg failed (offline?), skipping."; \
+			if ! CLAUDECODE=1 npx -y skills@latest add "$$pkg" -g -y -a claude-code -s '*' >/tmp/skills-add.log 2>&1; then \
+				echo "Warning: skills add $$pkg failed:"; \
+				tail -5 /tmp/skills-add.log | sed 's/^/    /'; \
+			fi; \
 		done; \
 	else \
 		echo "Warning: npx not found, skipping skill package install."; \
