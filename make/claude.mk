@@ -149,4 +149,11 @@ setup-claude-config:
 	else \
 		echo "Warning: npx not found, skipping skill package install."; \
 	fi
+	@# Skill prerequisites. The no-mistakes skill needs its CLI on PATH, but
+	@# `npm install -g` can't write to the read-only nix store under flox,
+	@# so install a shim in ~/.local/bin that runs it via npx (cached).
+	@mkdir -p "$(HOME)/.local/bin"
+	@printf '#!/bin/sh\n# Managed by dotfiles make setup-claude-config.\nexec npx -y no-mistakes@latest "$$@"\n' > "$(HOME)/.local/bin/no-mistakes"
+	@chmod +x "$(HOME)/.local/bin/no-mistakes"
+	@echo "no-mistakes CLI shim installed."
 	@echo "Claude config setup complete."
