@@ -36,7 +36,6 @@ git.pkg-path = "git"
 gitleaks.pkg-path = "gitleaks"
 pre-commit.pkg-path = "pre-commit"
 pre-commit.outputs = "all"
-nodejs_20.pkg-path = "nodejs_20"
 terraform.pkg-path = "terraform"
 _1password-cli.pkg-path = "_1password-cli"
 rsync.pkg-path = "rsync"
@@ -47,6 +46,7 @@ zellij.pkg-path = "zellij"
 # isolated group: cloudquery's deps conflict with the toplevel group
 cloudquery.pkg-path = "cloudquery"
 cloudquery.pkg-group = "cloudquery"
+nodejs_24.pkg-path = "nodejs_24"
 
 
 ## Environment Variables ---------------------------------------------
