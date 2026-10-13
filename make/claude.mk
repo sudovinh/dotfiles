@@ -103,10 +103,14 @@ setup-claude-config:
 			done; \
 		fi; \
 	done
-	@# Refresh the REA workflow skill in ~/.claude/skills (MCP entry lives in claude_mcp_<profile>.json).
+	@# Refresh the REA workflow skill in ~/.claude/skills — personal profile only
+	@# (MCP entry lives in claude_mcp_main.json; work machines get neither).
 	@# Setup exits nonzero over optional Hopper/pinning advice even when the skill installs,
 	@# so verify the skill directory instead of the exit code.
-	@if command -v npx >/dev/null 2>&1; then \
+	@if [ "$(PROFILE)" != "main" ]; then \
+		echo "Skipping REA skill (profile '$(PROFILE)', personal-only)."; \
+		rm -rf "$(CLAUDE_CONFIG_DIR)/skills/reverse-engineer-anything"; \
+	elif command -v npx >/dev/null 2>&1; then \
 		echo "Refreshing REA skill..."; \
 		npx -y rea-agents@latest setup --skill-client claude_code --yes --json >/dev/null 2>&1 || true; \
 		if [ -d "$(CLAUDE_CONFIG_DIR)/skills/reverse-engineer-anything" ]; then \
