@@ -47,6 +47,7 @@ zellij.pkg-path = "zellij"
 cloudquery.pkg-path = "cloudquery"
 cloudquery.pkg-group = "cloudquery"
 nodejs_24.pkg-path = "nodejs_24"
+sherlock.pkg-path = "sherlock"
 
 
 ## Environment Variables ---------------------------------------------

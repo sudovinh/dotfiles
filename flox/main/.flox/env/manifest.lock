@@ -94,6 +94,9 @@
       "rsync": {
         "pkg-path": "rsync"
       },
+      "sherlock": {
+        "pkg-path": "sherlock"
+      },
       "terraform": {
         "pkg-path": "terraform"
       },
@@ -2857,6 +2860,99 @@
       ],
       "outputs": {
         "out": "/nix/store/m32bd1hka5jszdkrr0851954wrl0vm72-rsync-3.4.1"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "sherlock",
+      "broken": false,
+      "derivation": "/nix/store/7kcl379pr3b95ms3k9mqpvn1q68zvm42-sherlock-0.16.0.drv",
+      "description": "Hunt down social media accounts by username across social networks",
+      "install_id": "sherlock",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d233902339c02a9c334e7e593de68855ad26c4cb",
+      "name": "sherlock-0.16.0",
+      "pname": "sherlock",
+      "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
+      "rev_count": 998534,
+      "rev_date": "2026-05-15T18:21:44Z",
+      "scrape_date": "2026-05-17T07:07:37.838959Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.16.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/1bgb5gd9myjn93qa6vrwwwq4vrinwzdg-sherlock-0.16.0-dist",
+        "out": "/nix/store/q7nbvz2nszr2j1bkpq5pyh1hk9707fgn-sherlock-0.16.0"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "sherlock",
+      "broken": false,
+      "derivation": "/nix/store/fc16kgg8b9nbwpsdisily07yfirn04yc-sherlock-0.16.0.drv",
+      "description": "Hunt down social media accounts by username across social networks",
+      "install_id": "sherlock",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d233902339c02a9c334e7e593de68855ad26c4cb",
+      "name": "sherlock-0.16.0",
+      "pname": "sherlock",
+      "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
+      "rev_count": 998534,
+      "rev_date": "2026-05-15T18:21:44Z",
+      "scrape_date": "2026-05-17T07:35:49.803428Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.16.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/35sz83f8sbqdnbdpjbwd4nrmsv4g2r1l-sherlock-0.16.0-dist",
+        "out": "/nix/store/spixkyi51grwydjdq5yagrsp4bv7z390-sherlock-0.16.0"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "sherlock",
+      "broken": false,
+      "derivation": "/nix/store/in7wdly8q3s21k5wfspw4jr2l1bm3gak-sherlock-0.16.0.drv",
+      "description": "Hunt down social media accounts by username across social networks",
+      "install_id": "sherlock",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=d233902339c02a9c334e7e593de68855ad26c4cb",
+      "name": "sherlock-0.16.0",
+      "pname": "sherlock",
+      "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
+      "rev_count": 998534,
+      "rev_date": "2026-05-15T18:21:44Z",
+      "scrape_date": "2026-05-17T08:34:41.959486Z",
+      "stabilities": [
+        "staging",
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "0.16.0",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "dist": "/nix/store/hz82j6wyhvprlar60df7sihdz0jqrriz-sherlock-0.16.0-dist",
+        "out": "/nix/store/rxi24injlrhhr71n0f2aw098nzhr98wk-sherlock-0.16.0"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
