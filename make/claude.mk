@@ -129,7 +129,12 @@ setup-claude-config:
 	@# CLAUDECODE=1 makes the skills CLI treat this as an agent run (fully
 	@# non-interactive); without it the CLI tries to render prompts and fails
 	@# when output is redirected. Errors are logged and shown on failure.
-	@if command -v npx >/dev/null 2>&1; then \
+	@# Refreshed at most once a day (stamp file); delete the stamp to force.
+	@STAMP="$(CLAUDE_CONFIG_DIR)/.skills-refreshed-$(PROFILE)"; \
+	if [ -n "$$(find "$$STAMP" -mmin -1440 2>/dev/null)" ]; then \
+		:; \
+	elif command -v npx >/dev/null 2>&1; then \
+		FAILED=0; \
 		PKGS="$(SKILL_PACKAGES)"; \
 		if [ "$(PROFILE)" = "main" ]; then \
 			PKGS="$$PKGS $(SKILL_PACKAGES_MAIN)"; \
@@ -144,8 +149,10 @@ setup-claude-config:
 			if ! CLAUDECODE=1 npx -y skills@latest add "$$pkg" -g -y -a claude-code -s '*' >/tmp/skills-add.log 2>&1; then \
 				echo "Warning: skills add $$pkg failed:"; \
 				tail -5 /tmp/skills-add.log | sed 's/^/    /'; \
+				FAILED=1; \
 			fi; \
 		done; \
+		if [ $$FAILED = 0 ]; then touch "$$STAMP"; fi; \
 	else \
 		echo "Warning: npx not found, skipping skill package install."; \
 	fi
