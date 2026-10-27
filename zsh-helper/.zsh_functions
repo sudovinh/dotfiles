@@ -731,7 +731,7 @@ function claude() {
     return 1
   fi
   [[ -z "${CLAUDE_CODE_EXECPATH}" ]] && make -C ~/.local/share/chezmoi setup-claude-config 2>/dev/null
-  command claude "$@"
+  command claude --plugin-dir ~/dev_setup/claude/plugins/statline "$@"
 }
 
 function setup-claude-bedrock() {
