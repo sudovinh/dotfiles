@@ -125,6 +125,9 @@ source $DEV_DIR/zsh_main
 # which the `claude` shell function runs on every invocation. Do not symlink them here:
 # a symlinked settings.json lets in-session changes drift straight into the repo.
 
+# Atuin history search (ctrl-r). Runs after zsh_work/zsh_main so flox has put it on PATH.
+command -v atuin >/dev/null 2>&1 && eval "$(atuin init zsh --disable-up-arrow)"
+
 command -v kubectl &>/dev/null && source <(kubectl completion zsh | sed 's/kubectl/kc/g')
 command -v kubectl &>/dev/null && source <(kubectl completion zsh | sed 's/kubectl/k/g')
 command -v direnv >/dev/null 2>&1 && eval "$(direnv hook zsh)"

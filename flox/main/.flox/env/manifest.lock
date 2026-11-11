@@ -6,6 +6,9 @@
       "_1password-cli": {
         "pkg-path": "_1password-cli"
       },
+      "atuin": {
+        "pkg-path": "atuin"
+      },
       "aws-vault": {
         "pkg-path": "aws-vault"
       },
@@ -476,6 +479,93 @@
       "priority": 5
     },
     {
+      "attr_path": "atuin",
+      "broken": false,
+      "derivation": "/nix/store/8z4v1zkrfj3b23n4hp14q25f4904pv0y-atuin-18.24.2.drv",
+      "description": "Replacement for a shell history which records additional commands context with optional encrypted synchronization between machines",
+      "install_id": "atuin",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=3ec636362e1816bc2f0888fa0fa2c69f1bc9e504",
+      "name": "atuin-18.24.2",
+      "pname": "atuin",
+      "rev": "3ec636362e1816bc2f0888fa0fa2c69f1bc9e504",
+      "rev_count": 1100280,
+      "rev_date": "2026-10-23T16:35:39Z",
+      "scrape_date": "2026-10-25T05:51:32.483519Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "18.24.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/z45vhn1mgyn61lpngls8hlag4cd252nq-atuin-18.24.2"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "atuin",
+      "broken": false,
+      "derivation": "/nix/store/lrrng302qbrcm0jpl1ddzs4w06irhria-atuin-18.24.2.drv",
+      "description": "Replacement for a shell history which records additional commands context with optional encrypted synchronization between machines",
+      "install_id": "atuin",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=3ec636362e1816bc2f0888fa0fa2c69f1bc9e504",
+      "name": "atuin-18.24.2",
+      "pname": "atuin",
+      "rev": "3ec636362e1816bc2f0888fa0fa2c69f1bc9e504",
+      "rev_count": 1100280,
+      "rev_date": "2026-10-23T16:35:39Z",
+      "scrape_date": "2026-10-25T06:24:58.722941Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "18.24.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/j6ngg1c4jpvs4969pjdqzpnpsa2bcndb-atuin-18.24.2"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "atuin",
+      "broken": false,
+      "derivation": "/nix/store/4d2hmbfimwlkv1w5cxgv2hcsgg9bxa9d-atuin-18.24.2.drv",
+      "description": "Replacement for a shell history which records additional commands context with optional encrypted synchronization between machines",
+      "install_id": "atuin",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=3ec636362e1816bc2f0888fa0fa2c69f1bc9e504",
+      "name": "atuin-18.24.2",
+      "pname": "atuin",
+      "rev": "3ec636362e1816bc2f0888fa0fa2c69f1bc9e504",
+      "rev_count": 1100280,
+      "rev_date": "2026-10-23T16:35:39Z",
+      "scrape_date": "2026-10-25T07:01:24.169496Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "18.24.2",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/8s2p4wcwda0bfbh8d5cx3akr047n5ipy-atuin-18.24.2"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
       "attr_path": "aws-vault",
       "broken": false,
       "derivation": "/nix/store/68jxb8vsf1fjqjbxybakjxbyq5520fil-aws-vault-7.16.2.drv",
@@ -582,6 +672,7 @@
       "unfree": false,
       "version": "2.36.31",
       "outputs_to_install": [
+        "out",
         "out"
       ],
       "outputs": {
@@ -612,6 +703,7 @@
       "unfree": false,
       "version": "2.36.31",
       "outputs_to_install": [
+        "out",
         "out"
       ],
       "outputs": {
@@ -642,6 +734,8 @@
       "unfree": false,
       "version": "2.36.31",
       "outputs_to_install": [
+        "out",
+        "out",
         "out"
       ],
       "outputs": {
@@ -1141,6 +1235,7 @@
       "version": "0.74.5",
       "outputs_to_install": [
         "man",
+        "out",
         "out"
       ],
       "outputs": {
@@ -1172,6 +1267,7 @@
       "version": "0.74.5",
       "outputs_to_install": [
         "man",
+        "out",
         "out"
       ],
       "outputs": {
@@ -1203,6 +1299,7 @@
       "version": "0.74.5",
       "outputs_to_install": [
         "man",
+        "out",
         "out"
       ],
       "outputs": {
@@ -1233,6 +1330,7 @@
       "unfree": false,
       "version": "2.103.0",
       "outputs_to_install": [
+        "out",
         "out"
       ],
       "outputs": {
@@ -1262,6 +1360,7 @@
       "unfree": false,
       "version": "2.103.0",
       "outputs_to_install": [
+        "out",
         "out"
       ],
       "outputs": {
@@ -1292,6 +1391,7 @@
       "unfree": false,
       "version": "2.103.0",
       "outputs_to_install": [
+        "out",
         "out"
       ],
       "outputs": {
@@ -1322,6 +1422,7 @@
       "unfree": false,
       "version": "2.56.0",
       "outputs_to_install": [
+        "out",
         "out"
       ],
       "outputs": {
@@ -1352,6 +1453,7 @@
       "unfree": false,
       "version": "2.56.0",
       "outputs_to_install": [
+        "out",
         "out"
       ],
       "outputs": {
@@ -1383,6 +1485,9 @@
       "unfree": false,
       "version": "2.56.0",
       "outputs_to_install": [
+        "out",
+        "out",
+        "out",
         "out"
       ],
       "outputs": {
@@ -1683,6 +1788,7 @@
       "outputs_to_install": [
         "bin",
         "bin",
+        "bin",
         "man",
         "man"
       ],
@@ -1720,6 +1826,7 @@
         "bin",
         "bin",
         "bin",
+        "bin",
         "man",
         "man"
       ],
@@ -1754,6 +1861,8 @@
       "unfree": false,
       "version": "1.8.2",
       "outputs_to_install": [
+        "bin",
+        "bin",
         "bin",
         "bin",
         "bin",
@@ -2323,6 +2432,8 @@
       "version": "24.21.0",
       "outputs_to_install": [
         "out",
+        "out",
+        "out",
         "out"
       ],
       "outputs": {
@@ -2353,6 +2464,7 @@
       "version": "24.21.0",
       "outputs_to_install": [
         "out",
+        "out",
         "out"
       ],
       "outputs": {
@@ -2382,6 +2494,8 @@
       "unfree": false,
       "version": "24.21.0",
       "outputs_to_install": [
+        "out",
+        "out",
         "out",
         "out",
         "out"
@@ -2560,6 +2674,7 @@
       "unfree": false,
       "version": "4.7.0",
       "outputs_to_install": [
+        "out",
         "out"
       ],
       "outputs": {
@@ -2590,6 +2705,8 @@
       "unfree": false,
       "version": "3.14.8",
       "outputs_to_install": [
+        "out",
+        "out",
         "out",
         "out",
         "out"
@@ -2624,6 +2741,8 @@
         "out",
         "out",
         "out",
+        "out",
+        "out",
         "out"
       ],
       "outputs": {
@@ -2654,6 +2773,9 @@
       "unfree": false,
       "version": "3.14.8",
       "outputs_to_install": [
+        "out",
+        "out",
+        "out",
         "out",
         "out",
         "out",
@@ -2984,6 +3106,7 @@
       "version": "3.8",
       "outputs_to_install": [
         "man",
+        "out",
         "out"
       ],
       "outputs": {
@@ -3015,6 +3138,7 @@
       "version": "3.8",
       "outputs_to_install": [
         "man",
+        "out",
         "out"
       ],
       "outputs": {
@@ -3145,6 +3269,8 @@
       "version": "1.25.0",
       "outputs_to_install": [
         "man",
+        "man",
+        "out",
         "out"
       ],
       "outputs": {

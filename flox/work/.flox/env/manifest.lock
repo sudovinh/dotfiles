@@ -9,6 +9,9 @@
       "argocd": {
         "pkg-path": "argocd"
       },
+      "atuin": {
+        "pkg-path": "atuin"
+      },
       "aws-vault": {
         "pkg-path": "aws-vault"
       },
@@ -521,6 +524,93 @@
       ],
       "outputs": {
         "out": "/nix/store/3d9kc5w24sir2s2jlfrxpihd0pbpz36f-argocd-3.5.6"
+      },
+      "system": "x86_64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "atuin",
+      "broken": false,
+      "derivation": "/nix/store/lvnjr3yc2pfzsb8mq9qp1zrxgc4bcjbh-atuin-18.24.5.drv",
+      "description": "Replacement for a shell history which records additional commands context with optional encrypted synchronization between machines",
+      "install_id": "atuin",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=f4a03c008967841f2a0b3cb7c436fc6fc31671f6",
+      "name": "atuin-18.24.5",
+      "pname": "atuin",
+      "rev": "f4a03c008967841f2a0b3cb7c436fc6fc31671f6",
+      "rev_count": 1113206,
+      "rev_date": "2026-11-07T09:04:50Z",
+      "scrape_date": "2026-11-09T05:50:26.539327Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "18.24.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/zx3ln48ycphsp24c54wk0g7r2j94yayv-atuin-18.24.5"
+      },
+      "system": "aarch64-darwin",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "atuin",
+      "broken": false,
+      "derivation": "/nix/store/mada4pz2hkpsnfkyv47f4i4ngsc9q1d4-atuin-18.24.5.drv",
+      "description": "Replacement for a shell history which records additional commands context with optional encrypted synchronization between machines",
+      "install_id": "atuin",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=f4a03c008967841f2a0b3cb7c436fc6fc31671f6",
+      "name": "atuin-18.24.5",
+      "pname": "atuin",
+      "rev": "f4a03c008967841f2a0b3cb7c436fc6fc31671f6",
+      "rev_count": 1113206,
+      "rev_date": "2026-11-07T09:04:50Z",
+      "scrape_date": "2026-11-09T06:19:04.346133Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "18.24.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/zlfg33ly8acbd7ffjg8m3b0dhbwcn9qd-atuin-18.24.5"
+      },
+      "system": "aarch64-linux",
+      "group": "toplevel",
+      "priority": 5
+    },
+    {
+      "attr_path": "atuin",
+      "broken": false,
+      "derivation": "/nix/store/ay02m7q65fndmnd6lzk50839l3y1571r-atuin-18.24.5.drv",
+      "description": "Replacement for a shell history which records additional commands context with optional encrypted synchronization between machines",
+      "install_id": "atuin",
+      "license": "MIT",
+      "locked_url": "https://github.com/flox/nixpkgs?rev=f4a03c008967841f2a0b3cb7c436fc6fc31671f6",
+      "name": "atuin-18.24.5",
+      "pname": "atuin",
+      "rev": "f4a03c008967841f2a0b3cb7c436fc6fc31671f6",
+      "rev_count": 1113206,
+      "rev_date": "2026-11-07T09:04:50Z",
+      "scrape_date": "2026-11-09T06:50:19.865668Z",
+      "stabilities": [
+        "unstable"
+      ],
+      "unfree": false,
+      "version": "18.24.5",
+      "outputs_to_install": [
+        "out"
+      ],
+      "outputs": {
+        "out": "/nix/store/vsw3glajnb3nvdx30q7i3bv6mzvs0ydf-atuin-18.24.5"
       },
       "system": "x86_64-linux",
       "group": "toplevel",
@@ -1228,6 +1318,7 @@
       "outputs_to_install": [
         "bin",
         "bin",
+        "man",
         "man"
       ],
       "outputs": {
@@ -1264,6 +1355,8 @@
       "outputs_to_install": [
         "bin",
         "bin",
+        "bin",
+        "man",
         "man",
         "man"
       ],
@@ -1686,6 +1779,7 @@
       "unfree": false,
       "version": "2.103.3",
       "outputs_to_install": [
+        "out",
         "out"
       ],
       "outputs": {
@@ -1716,6 +1810,7 @@
       "unfree": false,
       "version": "2.103.3",
       "outputs_to_install": [
+        "out",
         "out"
       ],
       "outputs": {
@@ -2411,6 +2506,7 @@
       "unfree": false,
       "version": "0.24.0",
       "outputs_to_install": [
+        "out",
         "out"
       ],
       "outputs": {
@@ -2739,6 +2835,7 @@
       "outputs_to_install": [
         "bin",
         "bin",
+        "man",
         "man"
       ],
       "outputs": {
@@ -2774,6 +2871,7 @@
       "outputs_to_install": [
         "bin",
         "bin",
+        "man",
         "man"
       ],
       "outputs": {
@@ -2809,6 +2907,8 @@
       "outputs_to_install": [
         "bin",
         "bin",
+        "bin",
+        "man",
         "man"
       ],
       "outputs": {
@@ -3290,6 +3390,8 @@
       "version": "2.34.9",
       "outputs_to_install": [
         "man",
+        "man",
+        "out",
         "out"
       ],
       "outputs": {
@@ -3323,6 +3425,8 @@
       "version": "2.34.9",
       "outputs_to_install": [
         "man",
+        "man",
+        "out",
         "out"
       ],
       "outputs": {
@@ -3356,6 +3460,8 @@
       "version": "2.34.9",
       "outputs_to_install": [
         "man",
+        "man",
+        "out",
         "out"
       ],
       "outputs": {
@@ -4325,6 +4431,7 @@
       "version": "3.8",
       "outputs_to_install": [
         "man",
+        "out",
         "out"
       ],
       "outputs": {
@@ -4388,6 +4495,8 @@
       "version": "2.3.2",
       "outputs_to_install": [
         "man",
+        "man",
+        "out",
         "out"
       ],
       "outputs": {
@@ -4419,6 +4528,8 @@
       "version": "2.3.2",
       "outputs_to_install": [
         "man",
+        "man",
+        "out",
         "out"
       ],
       "outputs": {
@@ -4450,6 +4561,8 @@
       "version": "2.3.2",
       "outputs_to_install": [
         "man",
+        "man",
+        "out",
         "out"
       ],
       "outputs": {
@@ -4664,6 +4777,8 @@
       "version": "1.25.0",
       "outputs_to_install": [
         "man",
+        "man",
+        "out",
         "out"
       ],
       "outputs": {
@@ -4696,6 +4811,9 @@
       "version": "1.25.0",
       "outputs_to_install": [
         "man",
+        "man",
+        "out",
+        "out",
         "out"
       ],
       "outputs": {
@@ -4728,6 +4846,8 @@
       "version": "1.25.0",
       "outputs_to_install": [
         "man",
+        "man",
+        "out",
         "out",
         "out"
       ],

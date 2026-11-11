@@ -64,6 +64,7 @@ go-tools.pkg-path = "go-tools"
 hn-text.pkg-path = "hn-text"
 sonobuoy.pkg-path = "sonobuoy"
 argo-rollouts.pkg-path = "argo-rollouts"
+atuin.pkg-path = "atuin"
 
 
 ## Environment Variables ---------------------------------------------

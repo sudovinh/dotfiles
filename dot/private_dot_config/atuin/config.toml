@@ -1,0 +1,20 @@
+# Atuin shell history. Full reference: `atuin default-config`.
+
+# Local only: no account, no history leaves this machine.
+auto_sync = false
+update_check = false # flox manages the version
+
+search_mode = "fuzzy"
+filter_mode = "global"
+style = "compact"
+inline_height = 20
+enter_accept = false # tab/enter puts the command on the line; edit before running
+
+# Lets ctrl-r inside search cycle to a "this git repo only" filter.
+workspaces = true
+
+# Drop commands that carry secrets.
+secrets_filter = true
+history_filter = [
+  "^export .*(TOKEN|SECRET|PASSWORD|KEY)=",
+]
