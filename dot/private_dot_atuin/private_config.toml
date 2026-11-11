@@ -1,4 +1,5 @@
-# Atuin shell history. Full reference: `atuin default-config`.
+# Atuin shell history. 18.24+ reads ~/.atuin/config.toml (not ~/.config/atuin).
+# Full reference: `atuin default-config`.
 
 # Local only: no account, no history leaves this machine.
 auto_sync = false
@@ -18,3 +19,12 @@ secrets_filter = true
 history_filter = [
   "^export .*(TOKEN|SECRET|PASSWORD|KEY)=",
 ]
+
+# Threads: capture Claude Code (and other agent) sessions so `atuin threads search`
+# and the herdr-app Threads mod can find and resume them. Needs the daemon.
+[daemon]
+enabled = true
+autostart = true
+
+[threads]
+capture = true
