@@ -156,11 +156,17 @@ setup-claude-config:
 	else \
 		echo "Warning: npx not found, skipping skill package install."; \
 	fi
-	@# Skill prerequisites. The no-mistakes skill needs its CLI on PATH, but
-	@# `npm install -g` can't write to the read-only nix store under flox,
-	@# so install a shim in ~/.local/bin that runs it via npx (cached).
+	@# Skill prerequisites. The no-mistakes skill needs its Go CLI on PATH.
+	@# The npm package of the same name is unrelated, so use the upstream
+	@# installer: binary in ~/.no-mistakes/bin, symlink in ~/.local/bin.
 	@mkdir -p "$(HOME)/.local/bin"
-	@printf '#!/bin/sh\n# Managed by dotfiles make setup-claude-config.\nexec npx -y no-mistakes@latest "$$@"\n' > "$(HOME)/.local/bin/no-mistakes"
-	@chmod +x "$(HOME)/.local/bin/no-mistakes"
-	@echo "no-mistakes CLI shim installed."
+	@if "$(HOME)/.local/bin/no-mistakes" axi --help >/dev/null 2>&1; then \
+		echo "no-mistakes CLI already installed."; \
+	else \
+		rm -f "$(HOME)/.local/bin/no-mistakes"; \
+		curl -fsSL https://raw.githubusercontent.com/kunchenguid/no-mistakes/main/docs/install.sh \
+			| NO_MISTAKES_LINK_DIR="$(HOME)/.local/bin" sh \
+			&& echo "no-mistakes CLI installed." \
+			|| echo "Warning: no-mistakes CLI install failed."; \
+	fi
 	@echo "Claude config setup complete."
