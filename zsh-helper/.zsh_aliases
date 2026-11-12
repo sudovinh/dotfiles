@@ -88,7 +88,7 @@ alias zsh-time='time zsh -i -c exit'
 
 ## Claude
 alias reload-claude='make -C ~/.local/share/chezmoi setup-claude-config'
-alias cr='atuin threads resume'  # pick a past agent session and resume it
+alias claude-resume='atuin threads resume'  # pick a past session and resume it
 
 ## Zellij
 alias zj-a='zellij attach'
