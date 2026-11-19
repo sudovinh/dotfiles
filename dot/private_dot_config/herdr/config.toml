@@ -20,15 +20,3 @@ prompt_new_tab_name = false
 pane_borders = true
 pane_gaps = true
 mouse_capture = true
-
-[[keys.command]]
-key = "prefix+t"
-type = "plugin_action"
-command = "tab-smart-rename.rename-now"
-description = "smart rename current tab"
-
-[[keys.command]]
-key = "prefix+option+t"
-type = "plugin_action"
-command = "tab-smart-rename.rename-all"
-description = "force smart rename all tabs"
