@@ -58,7 +58,15 @@
     "ctrl-7": "space.select:7",
     "ctrl-8": "space.select:8",
     "ctrl-9": "space.select:9",
-    "cmd-shift-t": "mod.open:atuin-threads"
+    "cmd-shift-t": "mod.open:atuin-threads",
+    "cmd-ctrl-h": "pane.go:left",
+    "cmd-ctrl-shift-h": "pane.swap:left",
+    "cmd-ctrl-j": "pane.go:down",
+    "cmd-ctrl-shift-j": "pane.swap:down",
+    "cmd-ctrl-k": "pane.go:up",
+    "cmd-ctrl-shift-k": "pane.swap:up",
+    "cmd-ctrl-l": "pane.go:right",
+    "cmd-ctrl-shift-l": "pane.swap:right"
   },
   "terminal": {
     "cmd-f": "terminal.search",

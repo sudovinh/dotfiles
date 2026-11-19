@@ -10,5 +10,6 @@
   "minimum_contrast": 1.0,
   "theme": "tokyo-night-moon",
   "font": "Meslo LG L DZ For Powerline",
-  "font_size": 15
+  "font_size": 15,
+  "copy_on_select": false
 }
