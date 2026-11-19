@@ -92,7 +92,7 @@ Activated automatically in your shell via `flox activate --dir`. Add packages by
 Links settings and MCP server configs from `dev_setup` (if configured). Safe no-op if `DEV_SETUP_REPO` is not set.
 
 ### Herdr
-Installs the Claude integration.
+Installs the Claude integration. Set `HERDR_APP=true` in `.env` to also install the desktop app.
 
 ### macOS Defaults
 Applies sensible system preferences (Finder, Dock, keyboard, screenshots). Override any setting in `.env`:
@@ -121,6 +121,7 @@ make brew-bundle-profile   Install profile Brewfile
 make brew-reconcile        Interactively reconcile installed brew packages vs Brewfiles
 make setup-claude-config   Link Claude settings + agents/commands
 make setup-herdr           Install Herdr agent integrations
+make install-herdr-app     Install Herdr desktop app (needs HERDR_APP=true)
 make setup-macos-defaults  Apply macOS system preferences
 make setup-notes           Clone Obsidian notes repo
 make clone-dev-setup       Clone private dev_setup repo

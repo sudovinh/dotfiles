@@ -31,6 +31,8 @@ combined="$(mktemp "${TMPDIR:-/tmp}/brewfile-combined.XXXXXXXX")"
 trap 'rm -f "$combined"' EXIT
 cat "$DEFAULT_FILE" > "$combined"
 [[ -f "$PROFILE_FILE" ]] && cat "$PROFILE_FILE" >> "$combined"
+# Optional Herdr app (see make/herdr.mk)
+[[ "${HERDR_APP:-}" == "true" ]] && echo 'cask "herdr-app"' >> "$combined"
 
 echo "Checking installed Homebrew packages against brew/default + brew/$PROFILE..."
 cleanup_output="$(brew bundle cleanup --file="$combined" --formula --cask 2>/dev/null || true)"
