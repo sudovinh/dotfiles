@@ -272,16 +272,36 @@ function gitcommit() {
   fi
 }
 
+# Delete stale deploy branches in a manifests repo clone.
+# usage: gitdeletebranches [--yes] [min_age_hours=24] [batch=100]
+# Dry run unless --yes. Only touches build-ID branches
+# (<app>_YYYYMMDDTHHMMSS_<sha>_<key>[_tier]); age comes from the name (PT).
 function gitdeletebranches() {
-  git for-each-ref --sort=-committerdate refs/remotes/origin/ --format="%(refname:short) %(committerdate:unix)" | \
-  grep -v 'origin/HEAD' | grep -v 'origin/main$' | \
-  while read -r refname unixtime; do
-    now_epoch=$(date +%s)
-    age=$(( (now_epoch - unixtime) / 3600 ))
-    if [ "$age" -ge 1 ]; then
-      branch=${refname#origin/}
-      git push origin --delete "$branch"
-    fi
+  local yes=0; [[ $1 == --yes ]] && { yes=1; shift }
+  local min_age=${1:-24} batch=${2:-100}
+  zmodload zsh/datetime
+  local cutoff; local -x TZ=America/Los_Angeles
+  strftime -s cutoff %Y%m%d%H%M%S $(( EPOCHSECONDS - min_age * 3600 ))
+
+  local -a branches=(${(f)"$(git ls-remote --heads origin \
+    | awk '{sub("refs/heads/","",$2); print $2}' \
+    | awk -v c="$cutoff" 'match($0,/_[0-9]{8}T[0-9]{6}_/) {
+        ts=substr($0,RSTART+1,15); gsub("T","",ts); if (ts < c) print }')"})
+
+  echo "${#branches} branches older than ${min_age}h"
+  (( ${#branches} )) || return 0
+  if (( ! yes )); then
+    printf '  %s\n' ${branches[1,5]}; echo "  ..."
+    echo "dry run; rerun with --yes to delete"; return 0
+  fi
+
+  local i end
+  for (( i = 1; i <= ${#branches}; i += batch )); do
+    end=$(( i + batch - 1 > ${#branches} ? ${#branches} : i + batch - 1 ))
+    git push --quiet origin --delete ${branches[i,end]} \
+      || echo "batch $i-$end failed; continuing"
+    echo "$end/${#branches}"
+    sleep 2
   done
 }
 
