@@ -1,0 +1,22 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+# Check and reload Rex whenever init.lua changes.
+# init.lua hash: {{ include "private_dot_config/rex/init.lua" | sha256sum }}
+set -euo pipefail
+
+rex="$HOME/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex"
+sock="$HOME/Library/Application Support/rex/server.sock"
+
+if [ ! -x "$rex" ]; then
+  echo "Rex not installed, skipping config check."
+  exit 0
+fi
+
+REX_CONFIG="$HOME/.config/rex/init.lua" "$rex" config check
+
+if [ -S "$sock" ]; then
+  "$rex" -S "unix://${sock// /%20}" config reload || echo "Rex reload failed; choose Reload Config in Rex."
+else
+  echo "Rex server not running, skipping reload."
+fi
+{{ end -}}
