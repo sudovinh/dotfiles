@@ -1,0 +1,16 @@
+# Rex appearance settings (macOS defaults domain com.superlogical.rex).
+# One per line: key, type (string|bool), value. Managed by scripts/rex-defaults.sh.
+# Changed something in Rex's Settings window? Run `make rex-pull` to copy it here.
+Workspace.appearance                             string dark
+Workspace.darkThemeID                            string custom-18F80B9D-3565-4D63-B8A5-3923ED0FB85B
+Workspace.lightThemeID                           string custom-6F1AD953-CFCD-4EA4-AD62-684B6E5B6AE1
+Workspace.interfaceStyle                         string blendTheme
+Workspace.inactivePaneFadeMode                   string both
+Workspace.activityGrouping                       string priority
+Workspace.sidebarPosition                        string left
+Workspace.tabBarEdge                             string top
+Workspace.tabIconTintMode                        string off
+Workspace.tabStyle                               string vertical
+Workspace.usesStandardInactiveWindowPaneStyles   bool   true
+Workspace.customThemes                           json   customThemes.json
+Workspace.sshAgentChoice                         string 1password

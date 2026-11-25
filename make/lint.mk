@@ -36,6 +36,7 @@ test:
 		setup-claude-config clone-dev-setup setup-notes update-repos \
 		install-xcode install-powerline-fonts setup-iterm2-shell-integration \
 		setup-macos-defaults select-ide setup-zed-config \
+		rex-check rex-pull rex-apply \
 		check-env print-variables lint help clean; do \
 		$(MAKE) -n "$$target" > /dev/null 2>&1 \
 			&& echo "  $$target: OK" \

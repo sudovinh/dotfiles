@@ -13,6 +13,7 @@ include make/zellij.mk
 include make/flox.mk
 include make/claude.mk
 include make/herdr.mk
+include make/rex.mk
 include make/repos.mk
 include make/system.mk
 include make/macos.mk
@@ -92,6 +93,7 @@ endif
 
 .PHONY: mac-update
 mac-update: \
+	_rex-check-advisory \
 	update-chezmoi \
 	update-repos \
 	update-oh-my-zsh-plugins \
@@ -141,6 +143,9 @@ help:
 	@echo "  setup-zellij           Verify Zellij installation"
 	@echo "  setup-claude-config    Link Claude settings + agents/commands"
 	@echo "  setup-herdr            Install Herdr agent integrations"
+	@echo "  rex-check              Report Rex settings drift vs dotfiles"
+	@echo "  rex-pull               Copy Rex settings back into dotfiles"
+	@echo "  rex-apply              Write dotfiles settings to Rex"
 	@echo "  install-herdr-app      Install Herdr desktop app (needs HERDR_APP=true)"
 	@echo "  setup-flox-config      Verify flox environment for active profile"
 	@echo "  refresh-flox-config    Update packages in the active flox profile"

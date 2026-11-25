@@ -97,8 +97,15 @@ on macOS and Linux. If Rex isn't installed or running, the script says so and sk
 - Linux (server only): run Superlogical's `install.sh` (shown after Discord login), then `rex server install`.
 
 Appearance settings (theme, tab style, sidebar) live in `~/Library/Preferences/com.superlogical.rex.plist`.
-`run_onchange_after_rex-defaults.sh` writes them with `defaults write`; change them there, not in Rex.
-Window frames, sessions and other per-machine state aren't synced.
+`configs/rex/defaults` lists the synced keys; chezmoi writes them to Rex when that file changes.
+Custom themes sync too, as `configs/rex/customThemes.json`.
+Window frames, sidebar width, sessions and other per-machine state aren't synced.
+
+- `make rex-check` — show settings changed in Rex, keys Rex renamed, and new untracked keys
+- `make rex-pull` — changed a setting in Rex? Copy it into `configs/rex/defaults`, then commit
+- `make rex-apply` — put Rex back to the dotfiles' values
+
+`make update` runs `rex-check` first, so you see local changes before chezmoi applies.
 
 On a new machine: run `make`, install Rex, then choose **Reload Config** in Rex.
 
@@ -153,6 +160,9 @@ make brew-reconcile        Interactively reconcile installed brew packages vs Br
 make setup-claude-config   Link Claude settings + agents/commands
 make setup-herdr           Install Herdr agent integrations
 make install-herdr-app     Install Herdr desktop app (needs HERDR_APP=true)
+make rex-check             Report Rex settings drift vs dotfiles
+make rex-pull              Copy Rex settings back into dotfiles
+make rex-apply             Write dotfiles settings to Rex
 make setup-macos-defaults  Apply macOS system preferences
 make setup-notes           Clone Obsidian notes repo
 make clone-dev-setup       Clone private dev_setup repo
@@ -179,6 +189,7 @@ dotfiles/
 ├── claude/                   # Shared Claude agents, commands, skills
 ├── configs/
 │   ├── chezmoi/              # Profile chezmoi .toml configs + chezmoiroot
+│   ├── rex/defaults          # Rex appearance settings (see Rex)
 │   └── iterm2/               # iTerm2 profile export (not applied by make)
 ├── dot/                      # Chezmoi source — rendered and deployed to ~
 │   ├── dot_zshrc.tmpl        # → ~/.zshrc
@@ -194,7 +205,7 @@ dotfiles/
 ├── make/                     # Makefile modules
 ├── macos/
 │   └── defaults.sh           # macOS system preferences script
-├── scripts/                  # Brew reconcile and migration helpers
+├── scripts/                  # Brew reconcile, migration, rex-defaults.sh
 ├── zsh-helper/               # Aliases, env, functions, prompts sourced by ~/.zshrc
 ├── bootstrap.sh              # Linux first-run prerequisites
 ├── .env.example              # Configuration template
