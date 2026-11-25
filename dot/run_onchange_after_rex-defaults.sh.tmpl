@@ -1,0 +1,23 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+# Rex appearance settings (Settings window). Edit the values here, not in Rex,
+# or they'll be overwritten on the next change to this file.
+# Window frames, sessions and other per-machine state stay out on purpose.
+set -euo pipefail
+
+d="com.superlogical.rex"
+
+defaults write "$d" Workspace.appearance -string dark
+defaults write "$d" Workspace.darkThemeID -string merino-dark
+defaults write "$d" Workspace.lightThemeID -string merino-light
+defaults write "$d" Workspace.interfaceStyle -string blendTheme
+defaults write "$d" Workspace.inactivePaneFadeMode -string both
+defaults write "$d" Workspace.activityGrouping -string priority
+defaults write "$d" Workspace.sidebarPosition -string left
+defaults write "$d" Workspace.tabBarEdge -string top
+defaults write "$d" Workspace.tabIconTintMode -string off
+defaults write "$d" Workspace.tabStyle -string vertical
+defaults write "$d" Workspace.usesStandardInactiveWindowPaneStyles -bool true
+
+echo "Rex appearance settings written; restart Rex if it was running."
+{{ end -}}

@@ -90,8 +90,15 @@ Activated automatically in your shell via `flox activate --dir`. Add packages by
 ### Rex
 Rex (by Superlogical) is in beta, so you install it by hand; it isn't in a Brewfile.
 Chezmoi still writes `~/.config/rex/init.lua` on every machine. When that file changes,
-`run_onchange_after_rex-reload.sh` checks it with `rex config check` and reloads Rex (macOS only).
-If Rex isn't installed or running, the script says so and skips.
+`run_onchange_after_rex-reload.sh` checks it with `rex config check` and reloads Rex,
+on macOS and Linux. If Rex isn't installed or running, the script says so and skips.
+
+- macOS: download the app from Superlogical.
+- Linux (server only): run Superlogical's `install.sh` (shown after Discord login), then `rex server install`.
+
+Appearance settings (theme, tab style, sidebar) live in `~/Library/Preferences/com.superlogical.rex.plist`.
+`run_onchange_after_rex-defaults.sh` writes them with `defaults write`; change them there, not in Rex.
+Window frames, sessions and other per-machine state aren't synced.
 
 On a new machine: run `make`, install Rex, then choose **Reload Config** in Rex.
 
@@ -178,6 +185,7 @@ dotfiles/
 │   ├── dot_gitconfig.tmpl    # → ~/.gitconfig
 │   ├── dot_local/bin/        # → ~/.local/bin/ (scripts)
 │   ├── private_dot_config/   # → ~/.config/ (ghostty, herdr, rex, zed, zellij)
+│   ├── run_onchange_after_rex-defaults.sh.tmpl  # Rex appearance settings
 │   └── run_onchange_after_rex-reload.sh.tmpl  # checks + reloads Rex
 ├── docs/                     # Design notes and plans
 ├── flox/
